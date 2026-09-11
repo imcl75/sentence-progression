@@ -480,6 +480,7 @@
     cursor:default;
   }
   .present-chip{
+    position:relative;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -492,6 +493,15 @@
     opacity:0;
     transform:translateY(14px) scale(0.96);
     transition:opacity .28s ease, transform .28s ease;
+  }
+  .present-chip .p-comma{
+    position:absolute;
+    right:-0.9vw;
+    bottom:-0.6vh;
+    color:#fff;
+    font-size:2.6vw;
+    font-weight:800;
+    text-shadow:0 2px 6px rgba(0,0,0,0.5);
   }
   .present-chip.visible{ opacity:1; transform:translateY(0) scale(1); }
   .present-chip .p-icon{ font-size:2.2vw; line-height:1; margin-bottom:0.4vh; }
@@ -587,7 +597,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression (Colourful Semantics) · v11.09.26f
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression (Colourful Semantics) · v11.09.26g
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -1013,10 +1023,12 @@ function openPresentMode(items, title){
 
   cleanItems.forEach(it=>{
     const def = TYPE[it.cat] || TYPE.lit;
+    const hasComma = /,$/.test(it.text);
+    const displayText = hasComma ? it.text.slice(0, -1) : it.text;
     if(it.cat === 'lit'){
       const chip = document.createElement('div');
       chip.className = 'present-lit';
-      chip.textContent = it.text;
+      chip.textContent = displayText;
       row.appendChild(chip);
       return;
     }
@@ -1031,7 +1043,7 @@ function openPresentMode(items, title){
       diamond.className = 'aux-diamond';
       const word = document.createElement('div');
       word.className = 'p-word';
-      word.textContent = it.text;
+      word.textContent = displayText;
       diamond.appendChild(word);
       chip.appendChild(diamond);
     } else {
@@ -1048,8 +1060,14 @@ function openPresentMode(items, title){
       chip.appendChild(label);
       const word = document.createElement('div');
       word.className = 'p-word';
-      word.textContent = it.text;
+      word.textContent = displayText;
       chip.appendChild(word);
+    }
+    if(hasComma){
+      const comma = document.createElement('div');
+      comma.className = 'p-comma';
+      comma.textContent = ',';
+      chip.appendChild(comma);
     }
     row.appendChild(chip);
   });
@@ -1427,7 +1445,7 @@ function autoTagSentence(str){
       // words as part of the same name, e.g. "Mr Fox" stays one who/what block.
       let k=i+1; const chunk=[w];
       while(k<n && /^[A-Z]/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]))){ chunk.push(raw[k]); k++; }
-      const cat = (vState==='full') ? 'what' : 'who';
+      const cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
       items.push({text: chunk.join(' '), cat});
       if(cat==='who') clauseHasSubject=true;
       i=k; sentenceStart=false; continue;
@@ -1454,7 +1472,7 @@ function autoTagSentence(str){
       const hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
       const nounWord = hasNoun ? raw[k] : null;
       if(hasNoun) k++;
-      const cat = (vState==='full') ? 'what' : 'who';
+      const cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
       if(adjWords.length){
         items.push({cat:'describe', text: w + ' ' + adjWords[0]});
         for(let ai=1; ai<adjWords.length; ai++) items.push({cat:'describe', text: adjWords[ai]});
@@ -1493,7 +1511,7 @@ function autoTagSentence(str){
         break;
       }
       if(k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]))){
-        const cat = (vState==='full') ? 'what':'who';
+        const cat = (vState==='full' || vState==='aux') ? 'what':'who';
         items.push({text: raw[k], cat});
         if(cat==='who') clauseHasSubject=true;
         k++;
@@ -1531,6 +1549,8 @@ function renderFreeWriteChips(container, items){
 
   items.forEach((item, idx)=>{
     const def = TYPE[item.cat];
+    const hasComma = /,$/.test(item.text);
+    const displayText = hasComma ? item.text.slice(0, -1) : item.text;
     const wrap = document.createElement('div');
     wrap.className = 'slot';
 
@@ -1569,12 +1589,19 @@ function renderFreeWriteChips(container, items){
     }
     const txt = document.createElement('div');
     txt.className = 'word-text';
-    txt.textContent = item.text;
+    txt.textContent = displayText;
     content.appendChild(txt);
     if(def.diamond) box.appendChild(content);
 
     wrap.appendChild(box);
     row.appendChild(wrap);
+
+    if(hasComma){
+      const comma = document.createElement('div');
+      comma.className = 'comma-mark';
+      comma.textContent = ',';
+      row.appendChild(comma);
+    }
   });
 
   const fullstop2 = document.createElement('div');

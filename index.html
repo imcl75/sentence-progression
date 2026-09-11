@@ -597,7 +597,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression (Colourful Semantics) · v11.09.26g
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression (Colourful Semantics) · v12.09.26a
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -612,6 +612,7 @@
 </div>
 
 <script src="lib/pptxgenjs.bundle.js"></script>
+<script src="lib/compromise.bundle.js"></script>
 <script>
 /* ---------- Colour / type definitions ---------- */
 const TYPE = {
@@ -1323,10 +1324,44 @@ function tokenize(str){
   return str.match(re) || [];
 }
 
+// Runs compromise.js once over the (punctuation-stripped) word sequence and returns a map
+// from index-in-`raw` to that word's POS tags. Used as a fallback signal for words our own
+// curated lists don't recognise (any noun/verb/adjective/proper-noun compromise knows) —
+// our own rules still take priority where we've already verified them against this tool's
+// register (e.g. "lolly", participle adjectives like "frightened children").
+function getPosTagsFor(raw, originalStr){
+  const tagMap = {};
+  if(typeof nlp === 'undefined') return tagMap;
+  const wordIndices = [];
+  raw.forEach((t, idx) => {
+    if(!/^[,.!?;]$/.test(t)) wordIndices.push(idx);
+  });
+  if(!wordIndices.length) return tagMap;
+  let terms;
+  try {
+    // Feed compromise the original punctuated text (not a comma-stripped rejoin) — commas
+    // are a real clause-boundary signal it uses for disambiguation, and stripping them
+    // measurably made its guesses worse in testing.
+    terms = nlp(originalStr).terms().json();
+  } catch(e) { return tagMap; }
+  if(!terms || terms.length !== wordIndices.length) return tagMap; // alignment safety: bail out rather than risk mis-mapped tags
+  terms.forEach((term, i) => {
+    const tags = (term.terms && term.terms[0] && term.terms[0].tags) || [];
+    tagMap[wordIndices[i]] = tags;
+  });
+  return tagMap;
+}
+
 function autoTagSentence(str){
   const raw = tokenize(str);
   const n = raw.length;
   const lower = w => w.toLowerCase();
+  const posTags = getPosTagsFor(raw, str);
+  const hasTag = (idx, tag) => !!(posTags[idx] && posTags[idx].includes(tag));
+  // Words compromise reliably mistags as Adjective in this tool's register (verified by
+  // testing), where they're actually being used as plain nouns.
+  const ADJ_TAG_EXCEPT = new Set(['adult','adults','parent','parents','teacher','teachers','baby','babies']);
+  const compromiseAdj = idx => hasTag(idx,'Adjective') && !ADJ_TAG_EXCEPT.has(lower(raw[idx]));
 
   const DET = new Set(['the','a','an','this','that','these','those','his','her','their','its','my','your','our','some','any','no','every','each']);
   const COORD = new Set(['and','but','so','or','yet','for']);
@@ -1460,18 +1495,25 @@ function autoTagSentence(str){
       while(k<n){
         const cur = raw[k];
         if(/^[,.!?;]$/.test(cur)){
-          if(cur===',' && k+1<n && looksAdjInNP(lower(raw[k+1]))){
+          if(cur===',' && k+1<n && (looksAdjInNP(lower(raw[k+1])) || compromiseAdj(k+1))){
             if(adjWords.length) adjWords[adjWords.length-1] += ',';
             k++; continue;
           }
           break;
         }
-        if(looksAdjInNP(lower(cur))){ adjWords.push(cur); k++; continue; }
+        if(looksAdjInNP(lower(cur)) || compromiseAdj(k)){ adjWords.push(cur); k++; continue; }
         break;
       }
-      const hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
-      const nounWord = hasNoun ? raw[k] : null;
+      let hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
+      let nounWord = hasNoun ? raw[k] : null;
       if(hasNoun) k++;
+      // Safety net: a determiner-led noun phrase must end in a noun. If adjective-gathering
+      // ran out without finding one (e.g. compromise mistags an ambiguous word like "adult"
+      // as an Adjective), the last word gathered was actually the noun, not a describer.
+      if(!hasNoun && adjWords.length){
+        nounWord = adjWords.pop().replace(/,$/, '');
+        hasNoun = true;
+      }
       const cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
       if(adjWords.length){
         items.push({cat:'describe', text: w + ' ' + adjWords[0]});
@@ -1488,7 +1530,7 @@ function autoTagSentence(str){
       items.push({text:w, cat:'how'}); i++; continue;
     }
 
-    if(looksAdj(lw)){
+    if(looksAdj(lw) || compromiseAdj(i)){
       if(vState==='aux'){
         items.push({text:w, cat:'describe'});
         vState='full'; i++; continue;
@@ -1497,26 +1539,44 @@ function autoTagSentence(str){
         items.push({text:w, cat:'describe'}); i++; continue;
       }
       // No determiner: each adjective is its own "describe" block, then the noun.
-      let k=i;
+      let k=i; const adjWords2=[];
       while(k<n){
         const cur = raw[k];
         if(/^[,.!?;]$/.test(cur)){
-          if(cur===',' && k+1<n && looksAdj(lower(raw[k+1]))){
-            if(items.length) items[items.length-1].text += ',';
+          if(cur===',' && k+1<n && (looksAdj(lower(raw[k+1])) || compromiseAdj(k+1))){
+            if(adjWords2.length) adjWords2[adjWords2.length-1] += ',';
             k++; continue;
           }
           break;
         }
-        if(looksAdj(lower(cur))){ items.push({cat:'describe', text:cur}); k++; continue; }
+        if(looksAdj(lower(cur)) || compromiseAdj(k)){ adjWords2.push(cur); k++; continue; }
         break;
       }
-      if(k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]))){
+      let hasNoun2 = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
+      let nounWord2 = hasNoun2 ? raw[k] : null;
+      if(hasNoun2) k++;
+      // Same safety net as the determiner branch above: an adjective run must end in a noun.
+      if(!hasNoun2 && adjWords2.length){
+        nounWord2 = adjWords2.pop().replace(/,$/, '');
+        hasNoun2 = true;
+      }
+      adjWords2.forEach(aw => items.push({cat:'describe', text:aw}));
+      if(hasNoun2){
         const cat = (vState==='full' || vState==='aux') ? 'what':'who';
-        items.push({text: raw[k], cat});
+        items.push({text: nounWord2, cat});
         if(cat==='who') clauseHasSubject=true;
-        k++;
       }
       i=k; sentenceStart=false; continue;
+    }
+
+    // Multi-word proper noun with no title (e.g. "Peter Rabbit"): if compromise sees this
+    // word and the previous word as both ProperNoun, and we just tagged that previous word
+    // as the subject with no verb seen yet, this word continues the same name rather than
+    // being mistaken for the verb.
+    if(clauseHasSubject && vState==='none' && items.length && items[items.length-1].cat==='who'
+       && /^[A-Z]/.test(w) && hasTag(i,'ProperNoun') && i>0 && hasTag(i-1,'ProperNoun')){
+      items[items.length-1].text += ' ' + w;
+      sentenceStart=false; i++; continue;
     }
 
     if(!clauseHasSubject){

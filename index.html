@@ -599,7 +599,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26g
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26h
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -1338,6 +1338,19 @@ function buildCard(structure, sIdx, yearId){
 }
 
 /* ---------- Free-write auto-tagger ---------- */
+// wink-pos-tagger's own statistical model mistags many common-but-less-frequent adjectives
+// as nouns (e.g. "stern", "shrewd", "sombre") when they're not adjacent to a clearer cue —
+// verified by testing a broad set of KS2-appropriate vocabulary outside this tool's curated
+// ADJ list. Seeding its lexicon with them directly (as arrays — a bare string value gets
+// silently truncated by the tagger's internal lemmatiser) fixes the large majority of these
+// without needing a heavier, network-hosted tagger.
+if(typeof winkPOSTagger !== 'undefined'){
+  const EXTRA_ADJECTIVES = ['stern','shrewd','sombre','coarse','morose','sullen','irate','livid','wistful','pensive','prim','svelte','coy','wry','bland','keen','genial','affable','glum','vast','grim','apt','brisk','wan','sly','posh','chic','stark','bleak','dour','tame','meek','vain','smug','crude','lewd','harsh','fierce','timid','docile','placid','surly','testy','irritable','cheery','jovial','merry','somber','dreary','dismal','forlorn','desolate','barren','fertile','lush','arid','damp','humid','murky','hazy','misty','gloomy','radiant','luminous','vivid','pale','faint','dim','garish','gaudy','drab','ornate','elegant','graceful','clumsy','awkward','nimble','agile','sturdy','frail','robust','feeble','vigorous','sluggish','hasty','tardy','punctual','prompt','abrupt','gradual','tender','rough','rugged','jagged','smooth','level','uneven','steep','mild','severe','intense','subtle','obvious','evident','vague','obscure','cryptic','blunt','tactful','candid','frank','sincere','devious','cunning','crafty','naive','gullible','skeptical','wary','cautious','reckless','rash','prudent','thrifty','frugal','lavish','extravagant','modest','arrogant','haughty','conceited','gracious','courteous','civil','impolite','vulgar','refined','polished','tacky','classy','dapper','scruffy','unkempt','tidy','sloppy','meticulous','careless','diligent','industrious','idle','slothful','zealous','apathetic','indifferent','passionate','ardent','fervent','tepid','lukewarm','scorching','sweltering','frigid','balmy','temperate','volatile','stable','erratic','steady','fickle','loyal','faithful','treacherous','devoted','dedicated','half-hearted','earnest','solemn','grave','jocular','witty','droll','comical','absurd','ludicrous','bizarre','peculiar','quaint','exotic','mundane','commonplace','remarkable','notable','distinguished','renowned','illustrious','infamous','notorious','reputable','dubious','suspicious','credible','plausible','implausible','far-fetched','genuine','authentic','fake','bogus','counterfeit','legitimate'];
+  const lex = {};
+  EXTRA_ADJECTIVES.forEach(w => { lex[w] = ['JJ']; });
+  try { winkPOSTagger.updateLexicon(lex); } catch(e) {}
+}
+
 function tokenize(str){
   const re = /[A-Za-z][A-Za-z'-]*|[,.!?;]/g;
   return str.match(re) || [];
@@ -1392,7 +1405,11 @@ function autoTagSentence(str){
   const PARTICLES = new Set(['out','up','down','away','back']);
   const ADJ_SUFFIX = /^[a-z]{3,}(ful|ous|ive|able|ible|less|ish|al|ic)$/;
   const PARTICIPLE_SUFFIX = /^[a-z]{3,}(ed|ing)$/;
-  const looksAdj = lw2 => ADJ.has(lw2) || ADJ_SUFFIX.test(lw2);
+  // Common nouns that happen to end in a suffix ADJ_SUFFIX treats as adjective-shaped
+  // (mostly "-ive" nouns like "detective") — checked here rather than folded into
+  // ADJ_TAG_EXCEPT, since that set only gates the tagger's own signal, not this suffix guess.
+  const SUFFIX_NOUN_EXCEPT = new Set(['detective','detectives','native','natives','relative','relatives','representative','representatives','objective','objectives','narrative','narratives','perspective','perspectives','captive','captives','initiative','initiatives','executive','executives','incentive','incentives','directive','directives','derivative','derivatives','alternative','alternatives','collective','collectives','motive','motives','adjective','adjectives']);
+  const looksAdj = lw2 => ADJ.has(lw2) || (ADJ_SUFFIX.test(lw2) && !SUFFIX_NOUN_EXCEPT.has(lw2));
   const looksAdjInNP = lw2 => looksAdj(lw2) || PARTICIPLE_SUFFIX.test(lw2);
   const isBoundaryWord = lw2 => COORD.has(lw2) || SUBORD.has(lw2) || RELPRON.has(lw2) || lw2==='that';
 

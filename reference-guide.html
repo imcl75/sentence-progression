@@ -39,18 +39,14 @@
     position:relative;
     page-break-after:always;
   }
-  .page:last-child{ page-break-after:auto; }
+  .page.no-break-after{ page-break-after:auto; }
 
   /* ---------- Cover ---------- */
   .cover{
     background:var(--dark);
     color:#fff;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
     text-align:center;
-    padding:0 16mm;
+    padding:110mm 16mm 0;
   }
   .cover .rainbow{
     display:flex;
@@ -184,7 +180,7 @@
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
   .slot-box img.icon{ height:18px; width:auto; margin-bottom:2px; }
-  .slot-box .word{ font-weight:700; font-size:0.78rem; text-align:center; color:#fff; }
+  .slot-box .word{ font-weight:700; font-size:0.78rem; text-align:center; color:inherit; }
   .aux-box{ background:var(--doing); }
   .aux-diamond{
     width:100%; min-height:46px; background:#fff; border:2px solid #222;
@@ -217,7 +213,7 @@
 
   @media print{
     body{ background:#fff; }
-    .page{ box-shadow:none; margin:0; width:auto; }
+    .page{ box-shadow:none; margin:0; width:auto; min-height:0; }
     .print-controls{ display:none; }
     @page{ size:A4; margin:14mm; }
   }
@@ -231,7 +227,6 @@
 
 <!-- COVER -->
 <div class="page cover">
-  <img class="logo" src="https://wallscourtfarmacademy.clf.uk/wp-content/uploads/Wallscourt%20Farm%20logo%20cmyk%20big.jpg" alt="Wallscourt Farm Academy">
   <div class="rainbow">
     <div style="background:#c0392b;--rot:-18deg"></div>
     <div style="background:var(--who);--rot:-10deg"></div>
@@ -272,27 +267,28 @@
 <div id="yearPages"></div>
 
 <!-- GLOSSARY -->
-<div class="page">
+<div class="page no-break-after">
   <div class="page-header"><h1>Glossary</h1><div class="tag">Reference Guide</div></div>
   <p class="lede">Grammatical terms used throughout this guide.</p>
   <dl class="glossary" id="glossaryList"></dl>
   <div class="note-box">This is not necessarily an exhaustive glossary of every term Jacobs Education's original document defines — it covers the terms most relevant to the structures in this guide. Ask if a term you need is missing.</div>
+  <div style="margin-top:16px; font-size:0.7rem; color:var(--muted); text-align:right;">v12.09.26f</div>
 </div>
 
 <script>
 const TYPE = {
-  who:      {label:'who',            bg:'var(--who)',      iconSrc:'icons/who.png'},
-  doing:    {label:'doing',          bg:'var(--doing)',    iconSrc:'icons/doing.png'},
-  what:     {label:'what',           bg:'var(--what)',     iconSrc:'icons/what.png'},
-  where:    {label:'where',          bg:'var(--where)',    iconSrc:'icons/where.png'},
-  when:     {label:'when',           bg:'var(--when)',     iconSrc:'icons/when.png'},
-  how:      {label:'how',            bg:'var(--how)',      iconSrc:'icons/how.png'},
-  describe: {label:'describe',       bg:'var(--describe)', iconSrc:'icons/describe.png'},
-  aux:      {label:'',               bg:'var(--doing)', diamond:true},
-  coord:    {label:'co-ordinating',  bg:'#fff', border:'2px solid var(--coord)', iconSrc:'icons/coord.png'},
-  subord:   {label:'subordinating',  bg:'#fff', border:'2px solid var(--subord)', iconSrc:'icons/subord.png'},
-  relative: {label:'relative clause',bg:'var(--relative-bg)', border:'2px solid var(--relative-border)', iconSrc:'icons/relative.png'},
-  lit:      {label:'',               bg:'var(--lit-bg)'}
+  who:      {label:'who',            bg:'var(--who)',      fg:'#fff', iconSrc:'icons/who.png'},
+  doing:    {label:'doing',          bg:'var(--doing)',    fg:'#3a2c00', iconSrc:'icons/doing.png'},
+  what:     {label:'what',           bg:'var(--what)',     fg:'#fff', iconSrc:'icons/what.png'},
+  where:    {label:'where',          bg:'var(--where)',    fg:'#fff', iconSrc:'icons/where.png'},
+  when:     {label:'when',           bg:'var(--when)',     fg:'#fff', iconSrc:'icons/when.png'},
+  how:      {label:'how',            bg:'var(--how)',      fg:'#fff', iconSrc:'icons/how.png'},
+  describe: {label:'describe',       bg:'var(--describe)', fg:'#fff', iconSrc:'icons/describe.png'},
+  aux:      {label:'',               bg:'var(--doing)', fg:'#222', diamond:true},
+  coord:    {label:'co-ordinating',  bg:'#fff', fg:'var(--coord)', border:'2px solid var(--coord)', iconSrc:'icons/coord.png'},
+  subord:   {label:'subordinating',  bg:'#fff', fg:'var(--subord)', border:'2px solid var(--subord)', iconSrc:'icons/subord.png'},
+  relative: {label:'relative clause',bg:'var(--relative-bg)', fg:'#333', border:'2px solid var(--relative-border)', iconSrc:'icons/relative.png'},
+  lit:      {label:'',               bg:'var(--lit-bg)', fg:'#333'}
 };
 function whoLabel(yearId){ return (yearId==='y1'||yearId==='y2') ? 'who' : 'who (subject)'; }
 function labelFor(type, yearId){
@@ -497,6 +493,7 @@ function renderCard(structure, yearId){
     wrap.appendChild(label);
     const box = document.createElement('div'); box.className = 'slot-box' + (def.diamond?' aux-box':'');
     box.style.background = def.bg;
+    box.style.color = def.fg;
     if(def.border) box.style.border = def.border;
     if(def.diamond){
       const dia = document.createElement('div'); dia.className='aux-diamond';

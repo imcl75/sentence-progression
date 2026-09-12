@@ -270,11 +270,29 @@
   .aux-diamond .word-text{ font-size:0.85rem; }
 
   .comma-mark{
+    position:relative;
     align-self:flex-end;
-    font-size:2rem;
-    font-weight:800;
-    color:#222;
-    margin:0 -2px 4px -4px;
+    width:16px;
+    height:26px;
+    margin:0 2px 6px -2px;
+    flex-shrink:0;
+  }
+  .comma-mark::before{
+    content:'';
+    position:absolute;
+    top:0; left:0;
+    width:16px; height:16px;
+    border-radius:50%;
+    background:#222;
+  }
+  .comma-mark::after{
+    content:'';
+    position:absolute;
+    top:10px; left:3px;
+    width:9px; height:15px;
+    background:#222;
+    border-radius:0 60% 60% 60%;
+    transform:rotate(12deg);
   }
   .fullstop-mark{
     align-self:flex-end;
@@ -496,12 +514,31 @@
   }
   .present-chip .p-comma{
     position:absolute;
-    right:-0.9vw;
-    bottom:-0.6vh;
-    color:#fff;
-    font-size:2.6vw;
-    font-weight:800;
-    text-shadow:0 2px 6px rgba(0,0,0,0.5);
+    right:-1.2vw;
+    bottom:-1.6vh;
+    width:1.6vw;
+    height:2.6vw;
+    min-width:16px;
+    min-height:26px;
+  }
+  .present-chip .p-comma::before{
+    content:'';
+    position:absolute;
+    top:0; left:0;
+    width:1.6vw; height:1.6vw;
+    min-width:16px; min-height:16px;
+    border-radius:50%;
+    background:#fff;
+  }
+  .present-chip .p-comma::after{
+    content:'';
+    position:absolute;
+    top:1vw; left:0.3vw;
+    width:0.9vw; height:1.5vw;
+    min-width:9px; min-height:15px;
+    background:#fff;
+    border-radius:0 60% 60% 60%;
+    transform:rotate(12deg);
   }
   .present-chip.visible{ opacity:1; transform:translateY(0) scale(1); }
   .present-chip .p-icon{ font-size:2.2vw; line-height:1; margin-bottom:0.4vh; }
@@ -585,7 +622,7 @@
 
 <main>
   <div class="about-box">
-    <strong>How to use this:</strong> Pick a year group above. Each row shows a sentence structure from the National Curriculum, broken into colour-coded parts (based on <em>Colourful Semantics</em>). Tap any coloured block and type your own word or phrase — the sentence below rebuilds itself as you go. Use a class's own year group for whole-class teaching, or drop down/up a year group to scaffold or stretch individual pupils. Or try the <strong>✏️ My sentence</strong> tab to have any sentence you write auto-coloured. On the whiteboard, use <strong>🎬 Present</strong> on any sentence to reveal it block by block, full screen.
+    <strong>How to use this:</strong> Pick a year group above. Each row shows a sentence structure from the National Curriculum, broken into colour-coded parts using Jacobs Education's <em>Colour-Coded Sentence Progression</em>. Tap any coloured block and type your own word or phrase — the sentence below rebuilds itself as you go. Use a class's own year group for whole-class teaching, or drop down/up a year group to scaffold or stretch individual pupils. Or try the <strong>✏️ My sentence</strong> tab to have any sentence you write auto-coloured. On the whiteboard, use <strong>🎬 Present</strong> on any sentence to reveal it block by block, full screen.
   </div>
 
   <div class="key-strip">
@@ -597,7 +634,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression (Colourful Semantics) · v12.09.26a
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26c
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -1067,7 +1104,6 @@ function openPresentMode(items, title){
     if(hasComma){
       const comma = document.createElement('div');
       comma.className = 'p-comma';
-      comma.textContent = ',';
       chip.appendChild(comma);
     }
     row.appendChild(chip);
@@ -1153,7 +1189,6 @@ function buildCard(structure, sIdx){
     if(tok.type === 'comma'){
       const c = document.createElement('div');
       c.className = 'comma-mark';
-      c.textContent = ',';
       row.appendChild(c);
       return;
     }
@@ -1659,7 +1694,6 @@ function renderFreeWriteChips(container, items){
     if(hasComma){
       const comma = document.createElement('div');
       comma.className = 'comma-mark';
-      comma.textContent = ',';
       row.appendChild(comma);
     }
   });

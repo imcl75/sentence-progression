@@ -599,7 +599,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26f
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26g
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -614,7 +614,7 @@
 </div>
 
 <script src="lib/pptxgenjs.bundle.js"></script>
-<script src="lib/compromise.bundle.js"></script>
+<script src="lib/wink-pos-tagger.bundle.js"></script>
 <script>
 /* ---------- Colour / type definitions ---------- */
 const TYPE = {
@@ -1343,31 +1343,22 @@ function tokenize(str){
   return str.match(re) || [];
 }
 
-// Runs compromise.js once over the (punctuation-stripped) word sequence and returns a map
-// from index-in-`raw` to that word's POS tags. Used as a fallback signal for words our own
-// curated lists don't recognise (any noun/verb/adjective/proper-noun compromise knows) —
-// our own rules still take priority where we've already verified them against this tool's
-// register (e.g. "lolly", participle adjectives like "frightened children").
-function getPosTagsFor(raw, originalStr){
+// Runs wink-pos-tagger once over our own token array (tagRawTokens keeps its output aligned
+// 1:1 with whatever tokens we feed it, so there's no re-tokenization to fall out of sync
+// with `raw`) and returns a map from index-in-`raw` to that word's Penn Treebank POS code.
+// Used as a fallback signal for words our own curated lists don't recognise (any adjective
+// or proper-noun the tagger knows) — our own rules still take priority where we've already
+// verified them against this tool's register (e.g. "lolly", participle adjectives like
+// "frightened children").
+function getPosTagsFor(raw){
   const tagMap = {};
-  if(typeof nlp === 'undefined') return tagMap;
-  const wordIndices = [];
-  raw.forEach((t, idx) => {
-    if(!/^[,.!?;]$/.test(t)) wordIndices.push(idx);
-  });
-  if(!wordIndices.length) return tagMap;
-  let terms;
+  if(typeof winkPOSTagger === 'undefined') return tagMap;
+  let tagged;
   try {
-    // Feed compromise the original punctuated text (not a comma-stripped rejoin) — commas
-    // are a real clause-boundary signal it uses for disambiguation, and stripping them
-    // measurably made its guesses worse in testing.
-    terms = nlp(originalStr).terms().json();
+    tagged = winkPOSTagger.tagRawTokens(raw);
   } catch(e) { return tagMap; }
-  if(!terms || terms.length !== wordIndices.length) return tagMap; // alignment safety: bail out rather than risk mis-mapped tags
-  terms.forEach((term, i) => {
-    const tags = (term.terms && term.terms[0] && term.terms[0].tags) || [];
-    tagMap[wordIndices[i]] = tags;
-  });
+  if(!tagged || tagged.length !== raw.length) return tagMap; // alignment safety: bail out rather than risk mis-mapped tags
+  tagged.forEach((t, idx) => { tagMap[idx] = t.pos; });
   return tagMap;
 }
 
@@ -1375,12 +1366,13 @@ function autoTagSentence(str){
   const raw = tokenize(str);
   const n = raw.length;
   const lower = w => w.toLowerCase();
-  const posTags = getPosTagsFor(raw, str);
-  const hasTag = (idx, tag) => !!(posTags[idx] && posTags[idx].includes(tag));
-  // Words compromise reliably mistags as Adjective in this tool's register (verified by
-  // testing), where they're actually being used as plain nouns.
+  const posTags = getPosTagsFor(raw);
+  const posOf = idx => posTags[idx] || '';
+  const isProperNounTag = idx => posOf(idx)==='NNP' || posOf(idx)==='NNPS';
+  // Defensive exclusion, kept from the previous tagger's known blind spot — wink-pos-tagger
+  // hasn't been seen to mistag these as adjectives, but this costs nothing to keep as insurance.
   const ADJ_TAG_EXCEPT = new Set(['adult','adults','parent','parents','teacher','teachers','baby','babies']);
-  const compromiseAdj = idx => hasTag(idx,'Adjective') && !ADJ_TAG_EXCEPT.has(lower(raw[idx]));
+  const taggerAdj = idx => posOf(idx)==='JJ' && !ADJ_TAG_EXCEPT.has(lower(raw[idx]));
 
   const DET = new Set(['the','a','an','this','that','these','those','his','her','their','its','my','your','our','some','any','no','every','each']);
   const COORD = new Set(['and','but','so','or','yet','for']);
@@ -1395,6 +1387,7 @@ function autoTagSentence(str){
   const ADJ = new Set(['happy','sad','excited','delicious','sweet','big','small','round','bright','tall','short','quick','slow','loud','quiet','gentle','careful','sudden','immediate','eager','nervous','calm','content','overwhelmed','hungry','tired','brave','kind','cruel','colourful','delightful','wonderful','amazing','terrible','huge','tiny','ancient','modern','shiny','dull','soft','hard','warm','cold','hot','fresh','old','young','beautiful','ugly','strange','curious','mysterious','clever','silly','funny','serious','proud','shy','angry','worried','confused','surprised','delighted','grumpy','cheerful','friendly','lonely','lovely','pretty','handsome','messy','tidy','neat','dirty','clean','heavy','light','strong','weak','rich','poor','busy','lazy','wild','tame','wise','foolish','honest','polite','rude','patient','impatient','ice',
     'red','blue','green','yellow','orange','purple','pink','black','white','brown','grey','gray','golden','silver','giant','enormous','massive','gigantic','miniature','sticky','fluffy','smooth','rough','bumpy','silky','furry','slimy','crunchy','squishy','spiky','prickly','noisy','silent','squeaky','screechy','fantastic','magnificent','glorious','spooky','magical','brilliant','fabulous','marvellous','super','awesome','incredible','extraordinary','splendid','dreadful','awful','horrible','nasty','disgusting','gross','yucky','square','circular','triangular','oval','curved','straight','mighty','powerful','fierce','dangerous','safe','empty','full','narrow','wide','deep','shallow','thick','thin','sharp','blunt','dark','sparkly','glittery','misty','foggy','sunny','rainy','snowy','icy','frosty','chilly','freezing','boiling','scary','creepy','frightening','terrifying','tiny','little','tall','wooden','plastic','metal','glass','stone','fresh','stale','ripe','juicy','crispy','chewy','sour','bitter','salty','spicy','tasty','yummy','wet','dry','muddy','sandy','rocky','grassy','fluttering','glowing','flashing','sleepy','exhausted','bored','jealous','embarrassed','ashamed','anxious','relaxed','peaceful','furious','terrified','astonished','puzzled','determined','confident','helpful','generous','selfish','stubborn','loyal','mischievous','naughty']);
   const RELPRON = new Set(['who','which','whose']);
+  const SUBJECT_PRONOUNS = new Set(['i','you','he','she','it','we','they']);
   const TITLES = new Set(['mr','mrs','ms','miss','mx','dr','sir','lord','lady','aunt','uncle','professor','prof','captain','king','queen','prince','princess','saint','st','madam','master']);
   const PARTICLES = new Set(['out','up','down','away','back']);
   const ADJ_SUFFIX = /^[a-z]{3,}(ful|ous|ive|able|ible|less|ish|al|ic)$/;
@@ -1410,6 +1403,10 @@ function autoTagSentence(str){
   // 'full' (a main verb or complement has been tagged).
   let clauseHasSubject = false, vState = 'none', sentenceStart = true;
   let skipCommaReset = false;
+  // Non-null while inside a comma-embedded subordinate-clause aside (e.g. "The child, as
+  // the adult tells a joke, laughs.") — holds the outer clause's clauseHasSubject so it can
+  // be restored at the aside's closing comma, rather than losing the outer subject entirely.
+  let embeddedSubordSaved = null;
 
   while(i < n){
     const w = raw[i];
@@ -1419,10 +1416,19 @@ function autoTagSentence(str){
       if(items.length) items[items.length-1].text += w;
       const nextLw = (i+1<n) ? lower(raw[i+1]) : '';
       const opensEmbeddedClause = w===',' && (RELPRON.has(nextLw) || nextLw==='that');
+      const opensSubordAside = w===',' && !opensEmbeddedClause && embeddedSubordSaved===null && SUBORD.has(nextLw);
       if(w === ',' && (skipCommaReset || opensEmbeddedClause)){
         skipCommaReset = opensEmbeddedClause ? true : false;
+      } else if(w === ',' && opensSubordAside){
+        embeddedSubordSaved = clauseHasSubject;
+        clauseHasSubject = false; vState = 'none';
+      } else if(w === ',' && embeddedSubordSaved !== null){
+        clauseHasSubject = embeddedSubordSaved;
+        vState = 'none';
+        embeddedSubordSaved = null;
       } else {
         clauseHasSubject = false; vState = 'none';
+        embeddedSubordSaved = null;
       }
       if(w !== ',') sentenceStart = true;
       i++; continue;
@@ -1533,13 +1539,13 @@ function autoTagSentence(str){
       while(k<n){
         const cur = raw[k];
         if(/^[,.!?;]$/.test(cur)){
-          if(cur===',' && k+1<n && (looksAdjInNP(lower(raw[k+1])) || compromiseAdj(k+1))){
+          if(cur===',' && k+1<n && (looksAdjInNP(lower(raw[k+1])) || taggerAdj(k+1))){
             if(adjWords.length) adjWords[adjWords.length-1] += ',';
             k++; continue;
           }
           break;
         }
-        if(looksAdjInNP(lower(cur)) || compromiseAdj(k)){ adjWords.push(cur); k++; continue; }
+        if(looksAdjInNP(lower(cur)) || taggerAdj(k)){ adjWords.push(cur); k++; continue; }
         break;
       }
       let hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
@@ -1552,13 +1558,25 @@ function autoTagSentence(str){
         k++;
       }
       // Safety net: a determiner-led noun phrase must end in a noun. If adjective-gathering
-      // ran out without finding one (e.g. compromise mistags an ambiguous word like "adult"
-      // as an Adjective), the last word gathered was actually the noun, not a describer.
+      // ran out without finding one (e.g. the tagger mistags an ambiguous word like "adult"
+      // as an adjective), the last word gathered was actually the noun, not a describer.
       if(!hasNoun && adjWords.length){
         nounWord = adjWords.pop().replace(/,$/, '');
         hasNoun = true;
       }
-      const cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
+      let cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
+      // A noun phrase right after a coordinating conjunction, with nothing but the sentence
+      // end following it (e.g. "the lolly and the fruit."), is continuing the previous list
+      // rather than starting a new clause — so it keeps the category from before the
+      // conjunction instead of defaulting to "who". A clause with its own verb still
+      // following (e.g. "...and the adult talks.") is unaffected, since that's not sentence-final.
+      if(items.length>=2 && items[items.length-1].cat==='coord'){
+        const isSentenceFinal = k>=n || /^[,.!?;]$/.test(raw[k]);
+        const prevCat = items[items.length-2].cat;
+        if(isSentenceFinal && ['what','where','when','how','describe'].includes(prevCat)){
+          cat = prevCat;
+        }
+      }
       if(adjWords.length){
         items.push({cat:'describe', text: w + ' ' + adjWords[0]});
         for(let ai=1; ai<adjWords.length; ai++) items.push({cat:'describe', text: adjWords[ai]});
@@ -1574,7 +1592,7 @@ function autoTagSentence(str){
       items.push({text:w, cat:'how'}); i++; continue;
     }
 
-    if(looksAdj(lw) || compromiseAdj(i)){
+    if(looksAdj(lw) || taggerAdj(i)){
       if(vState==='aux'){
         items.push({text:w, cat:'describe'});
         vState='full'; i++; continue;
@@ -1587,13 +1605,13 @@ function autoTagSentence(str){
       while(k<n){
         const cur = raw[k];
         if(/^[,.!?;]$/.test(cur)){
-          if(cur===',' && k+1<n && (looksAdj(lower(raw[k+1])) || compromiseAdj(k+1))){
+          if(cur===',' && k+1<n && (looksAdj(lower(raw[k+1])) || taggerAdj(k+1))){
             if(adjWords2.length) adjWords2[adjWords2.length-1] += ',';
             k++; continue;
           }
           break;
         }
-        if(looksAdj(lower(cur)) || compromiseAdj(k)){ adjWords2.push(cur); k++; continue; }
+        if(looksAdj(lower(cur)) || taggerAdj(k)){ adjWords2.push(cur); k++; continue; }
         break;
       }
       let hasNoun2 = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
@@ -1613,17 +1631,24 @@ function autoTagSentence(str){
       i=k; sentenceStart=false; continue;
     }
 
-    // Multi-word proper noun with no title (e.g. "Peter Rabbit"): if compromise sees this
-    // word and the previous word as both ProperNoun, and we just tagged that previous word
+    // Multi-word proper noun with no title (e.g. "Peter Rabbit"): if the tagger sees this
+    // word and the previous word as both a proper noun, and we just tagged that previous word
     // as the subject with no verb seen yet, this word continues the same name rather than
     // being mistaken for the verb.
     if(clauseHasSubject && vState==='none' && items.length && items[items.length-1].cat==='who'
-       && /^[A-Z]/.test(w) && hasTag(i,'ProperNoun') && i>0 && hasTag(i-1,'ProperNoun')){
+       && /^[A-Z]/.test(w) && isProperNounTag(i) && i>0 && isProperNounTag(i-1)){
       items[items.length-1].text += ' ' + w;
       sentenceStart=false; i++; continue;
     }
 
-    if(!clauseHasSubject){
+    // A subject pronoun right after a coordinating conjunction (e.g. "...for they are
+    // hungry") always introduces a new clause with its own subject, even though
+    // clauseHasSubject is still (correctly) true from the clause before the conjunction —
+    // that flag alone can't tell "eats and plays" (same subject, second verb) apart from
+    // "eats for they are hungry" (new clause), so a pronoun here overrides it.
+    if(items.length && items[items.length-1].cat==='coord' && SUBJECT_PRONOUNS.has(lw)){
+      items.push({text:w, cat:'who'}); clauseHasSubject=true;
+    } else if(!clauseHasSubject){
       items.push({text:w, cat:'who'}); clauseHasSubject=true;
     } else if(vState==='none' || vState==='aux'){
       let text = w;

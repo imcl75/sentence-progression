@@ -599,7 +599,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26i
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26j
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -702,8 +702,8 @@ const YEARS = [
   intro:"Year 1 pupils build a solid foundation in sentence construction: simple sentences with a subject (who) and a verb (doing), and joining words or clauses with 'and'.",
   structures:[
     { title:"Simple sentence", note:"who + doing",
-      pattern:[ s('who','The plastic'), s('doing','bends') ],
-      examples:["The plastic bends.","The plastic bent."] },
+      pattern:[ s('who','The magnet'), s('doing','attracts') ],
+      examples:["The magnet attracts.","The magnet attracted."] },
     { title:"Simple sentence", note:"who + doing + what",
       pattern:[ s('who','The seed'), s('doing','needs'), s('what','water') ],
       examples:["The seed needs water.","The seed needed water."] },
@@ -1352,7 +1352,10 @@ if(typeof winkPOSTagger !== 'undefined'){
 }
 
 function tokenize(str){
-  const re = /[A-Za-z][A-Za-z'-]*|[,.!?;]/g;
+  // Numbers need their own alternative — without it, a bare digit run (a year like "1642",
+  // a count like "12") isn't a letter sequence, isn't punctuation, and silently vanishes
+  // from the token stream instead of showing up as an unrecognised word.
+  const re = /[A-Za-z][A-Za-z'-]*|[0-9]+|[,.!?;]/g;
   return str.match(re) || [];
 }
 
@@ -1384,7 +1387,7 @@ function autoTagSentence(str){
   const isProperNounTag = idx => posOf(idx)==='NNP' || posOf(idx)==='NNPS';
   // Defensive exclusion, kept from the previous tagger's known blind spot — wink-pos-tagger
   // hasn't been seen to mistag these as adjectives, but this costs nothing to keep as insurance.
-  const ADJ_TAG_EXCEPT = new Set(['adult','adults','parent','parents','teacher','teachers','baby','babies']);
+  const ADJ_TAG_EXCEPT = new Set(['adult','adults','parent','parents','teacher','teachers','baby','babies','current','currents']);
   const taggerAdj = idx => posOf(idx)==='JJ' && !ADJ_TAG_EXCEPT.has(lower(raw[idx]));
 
   const DET = new Set(['the','a','an','this','that','these','those','his','her','their','its','my','your','our','some','any','no','every','each']);
@@ -1393,12 +1396,23 @@ function autoTagSentence(str){
   const SUBORD = new Set(['because','if','although','unless','whenever','whereas','though','supposing','as','since','while','until','before','after','when']);
   const TIME_HINT = new Set(['before','after','since','while','until','when']);
   const AUX = new Set(['is','was','are','were','am','has','have','had','be','been','being','do','does','did','might','can','could','may','must','shall','should','will','would']);
-  const PREP_WHERE = new Set(['at','in','on','under','over','near','beside','behind','above','below','inside','outside','between','among','through','across','around','from','into','onto','towards','by']);
+  const PREP_WHERE = new Set(['at','in','on','under','over','near','beside','behind','above','below','inside','outside','between','among','through','across','around','from','into','onto','towards','by','along','beyond','beneath','alongside','past','upon','amid','down','up','against']);
   const PREP_OTHER = new Set(['with','without','of','about','like','than','except','despite','via','per']);
-  const ADV_EXTRA = new Set(['perhaps','maybe','surely','completely','probably','certainly','definitely','possibly','obviously','clearly','actually','really','totally','absolutely','quite','rather','extremely','very','soon','then','now','today','yesterday','tomorrow','later','finally','suddenly','immediately','afterwards','meanwhile','already','still','again','often','always','never','sometimes']);
+  const ADV_EXTRA = new Set(['perhaps','maybe','surely','completely','probably','certainly','definitely','possibly','obviously','clearly','actually','really','totally','absolutely','quite','rather','extremely','very','soon','then','now','today','yesterday','tomorrow','later','finally','suddenly','immediately','afterwards','meanwhile','already','still','again','often','always','never','sometimes','hard','fast']);
   const ADV_EXCEPT = new Set(['family','families','only','early','friendly','lonely','lovely','silly','ugly','holy','lolly','lollies','jelly','jellies','belly','bellies','trolley','trolleys','dolly','dollies','rally','rallies','bully','bullies','gully','gullies','filly','fillies','ally','allies','butterfly','butterflies','dragonfly','dragonflies']);
   const ADJ = new Set(['happy','sad','excited','delicious','sweet','big','small','round','bright','tall','short','quick','slow','loud','quiet','gentle','careful','sudden','immediate','eager','nervous','calm','content','overwhelmed','hungry','tired','brave','kind','cruel','colourful','delightful','wonderful','amazing','terrible','huge','tiny','ancient','modern','shiny','dull','soft','hard','warm','cold','hot','fresh','old','young','beautiful','ugly','strange','curious','mysterious','clever','silly','funny','serious','proud','shy','angry','worried','confused','surprised','delighted','grumpy','cheerful','friendly','lonely','lovely','pretty','handsome','messy','tidy','neat','dirty','clean','heavy','light','strong','weak','rich','poor','busy','lazy','wild','tame','wise','foolish','honest','polite','rude','patient','impatient','ice',
-    'red','blue','green','yellow','orange','purple','pink','black','white','brown','grey','gray','golden','silver','giant','enormous','massive','gigantic','miniature','sticky','fluffy','smooth','rough','bumpy','silky','furry','slimy','crunchy','squishy','spiky','prickly','noisy','silent','squeaky','screechy','fantastic','magnificent','glorious','spooky','magical','brilliant','fabulous','marvellous','super','awesome','incredible','extraordinary','splendid','dreadful','awful','horrible','nasty','disgusting','gross','yucky','square','circular','triangular','oval','curved','straight','mighty','powerful','fierce','dangerous','safe','empty','full','narrow','wide','deep','shallow','thick','thin','sharp','blunt','dark','sparkly','glittery','misty','foggy','sunny','rainy','snowy','icy','frosty','chilly','freezing','boiling','scary','creepy','frightening','terrifying','tiny','little','tall','wooden','plastic','metal','glass','stone','fresh','stale','ripe','juicy','crispy','chewy','sour','bitter','salty','spicy','tasty','yummy','wet','dry','muddy','sandy','rocky','grassy','fluttering','glowing','flashing','sleepy','exhausted','bored','jealous','embarrassed','ashamed','anxious','relaxed','peaceful','furious','terrified','astonished','puzzled','determined','confident','helpful','generous','selfish','stubborn','loyal','mischievous','naughty']);
+    'red','blue','green','yellow','orange','purple','pink','black','white','brown','grey','gray','golden','silver','giant','enormous','massive','gigantic','miniature','sticky','fluffy','smooth','rough','bumpy','silky','furry','slimy','crunchy','squishy','spiky','prickly','noisy','silent','squeaky','screechy','fantastic','magnificent','glorious','spooky','magical','brilliant','fabulous','marvellous','super','awesome','incredible','extraordinary','splendid','dreadful','awful','horrible','nasty','disgusting','gross','yucky','square','circular','triangular','oval','curved','straight','mighty','powerful','fierce','dangerous','safe','empty','full','narrow','wide','deep','shallow','thick','thin','sharp','blunt','dark','sparkly','glittery','misty','foggy','sunny','rainy','windy','stormy','snowy','icy','frosty','chilly','freezing','boiling','scary','transparent','opaque','creepy','frightening','terrifying','tiny','little','tall','wooden','plastic','metal','glass','stone','fresh','stale','ripe','juicy','crispy','chewy','sour','bitter','salty','spicy','tasty','yummy','wet','dry','muddy','sandy','rocky','grassy','fluttering','glowing','flashing','sleepy','exhausted','bored','jealous','embarrassed','ashamed','anxious','relaxed','peaceful','furious','terrified','astonished','puzzled','determined','confident','helpful','generous','selfish','stubborn','loyal','mischievous','naughty']);
+  // A bare time phrase like "this morning" or "every week" has no preposition to trigger
+  // the where/when sweep above, so without this it falls through to the generic noun-phrase
+  // rules and reads as "what" — these two small sets catch the common determiner+time-noun
+  // combinations and route them to "when" instead.
+  const TIME_PHRASE_DET = new Set(['this','that','last','next','every','each']);
+  const TIME_NOUNS = new Set(['morning','afternoon','evening','night','day','week','month','year','weekend']);
+  // A handful of everyday nouns this tool is likely to meet as the second half of a
+  // compound subject ("apple tree", "football team") that are, in practice, never used as
+  // verbs — so they're safe to treat as continuing the subject even on the rare sentence
+  // where the tagger also fumbles the clause's real verb and hasLaterVerb can't confirm it.
+  const SAFE_NOUN = new Set(['tree','trees','house','houses','school','schools','team','teams','officer','officers','teacher','teachers','coach','coaches','army','armies','family','families','building','buildings','garden','gardens','street','streets','river','rivers','mountain','mountains','castle','castles','village','villages','city','cities','country','countries','king','kings','queen','queens','pharaoh','pharaohs','soldier','soldiers','farmer','farmers','doctor','doctors','ship','ships','boat','boats']);
   const RELPRON = new Set(['who','which','whose']);
   const SUBJECT_PRONOUNS = new Set(['i','you','he','she','it','we','they']);
   const TITLES = new Set(['mr','mrs','ms','miss','mx','dr','sir','lord','lady','aunt','uncle','professor','prof','captain','king','queen','prince','princess','saint','st','madam','master']);
@@ -1411,7 +1425,39 @@ function autoTagSentence(str){
   const SUFFIX_NOUN_EXCEPT = new Set(['detective','detectives','native','natives','relative','relatives','representative','representatives','objective','objectives','narrative','narratives','perspective','perspectives','captive','captives','initiative','initiatives','executive','executives','incentive','incentives','directive','directives','derivative','derivatives','alternative','alternatives','collective','collectives','motive','motives','adjective','adjectives']);
   const looksAdj = lw2 => ADJ.has(lw2) || (ADJ_SUFFIX.test(lw2) && !SUFFIX_NOUN_EXCEPT.has(lw2));
   const looksAdjInNP = lw2 => looksAdj(lw2) || PARTICIPLE_SUFFIX.test(lw2);
-  const isBoundaryWord = lw2 => COORD.has(lw2) || SUBORD.has(lw2) || RELPRON.has(lw2) || lw2==='that';
+  // "to" always starts either a prepositional phrase ("to the shop") or an infinitive
+  // ("to travel") — never the tail end of a noun/adjective phrase already in progress —
+  // so every lookahead loop below should stop there rather than swallowing it.
+  const isBoundaryWord = lw2 => COORD.has(lw2) || SUBORD.has(lw2) || RELPRON.has(lw2) || lw2==='that' || lw2==='to';
+  // Many everyday nouns are spelled exactly like a verb ("sails", "plays", "watches",
+  // "records") and this tagger's statistical model isn't reliable enough to call that
+  // ambiguity correctly word-by-word in a short sentence. The safe question to ask instead
+  // is structural: does a clearer verb turn up later in this same clause? If so, the
+  // current ambiguous word can safely be treated as a noun (the clause already has its
+  // verb). If nothing later looks like a verb before the clause ends, this word must BE
+  // the verb — a clause can't have none — so it's left alone rather than merged away.
+  const startsSubordMulti = idx => SUBORD_MULTI.some(phrase => {
+    const parts = phrase.split(' ');
+    return idx+parts.length<=n && raw.slice(idx, idx+parts.length).map(lower).join(' ')===phrase;
+  });
+  const hasLaterVerb = fromIdx => {
+    let j = fromIdx;
+    while(j<n && !/^[,.!?;]$/.test(raw[j]) && !isBoundaryWord(lower(raw[j])) && !startsSubordMulti(j)){
+      const lw2 = lower(raw[j]);
+      if(DET.has(lw2)){ j++; continue; }
+      if(looksAdj(lw2) || taggerAdj(j)){ j++; continue; } // still inside a modifier run
+      // A word immediately after a bare determiner is functioning inside a noun phrase —
+      // most often a participial adjective ("the fallen leaves") — even when its own tag
+      // looks verb-shaped (VBN/VBG); a genuine clause verb is never preceded by a bare
+      // determiner with nothing in between. Skip it rather than treating it as confirmation.
+      if(j>fromIdx && DET.has(lower(raw[j-1]))){ j++; continue; }
+      // Decide on the first real content word reached rather than scanning further —
+      // hunting deeper risks tripping over an unrelated noun/verb-ambiguous word inside
+      // the object phrase (e.g. "leaves" in "the fallen leaves") and returning a false yes.
+      return /^VB/.test(posOf(j));
+    }
+    return false;
+  };
 
   const items = [];
   let i = 0;
@@ -1479,20 +1525,45 @@ function autoTagSentence(str){
     }
 
     if(COORD.has(lw)){
+      // "for" is ambiguous: a co-ordinating conjunction joining two clauses (the Y5
+      // curriculum sense — "eats for they are hungry") vs. an ordinary preposition of
+      // duration or beneficiary ("for thirty years", "for the guests"), which is far more
+      // common in everyday writing. Only treat it as a conjunction when a clause (a
+      // subject-ish word followed by a verb/aux) actually follows shortly after —
+      // otherwise sweep the phrase as a plain, uncoloured preposition phrase.
+      if(lw==='for'){
+        let j=i+1, sawSubjectish=false, looksLikeClause=false;
+        while(j<n && !/^[,.!?;]$/.test(raw[j]) && j<i+7){
+          const lw2 = lower(raw[j]);
+          if(AUX.has(lw2) || /^VB/.test(posOf(j))){ looksLikeClause = sawSubjectish; break; }
+          if(SUBJECT_PRONOUNS.has(lw2) || DET.has(lw2) || isProperNounTag(j)) sawSubjectish = true;
+          j++;
+        }
+        if(!looksLikeClause){
+          let k=i; const chunk=[];
+          while(k<n && !/^[,.!?;]$/.test(raw[k]) && !(k>i && isBoundaryWord(lower(raw[k])))){ chunk.push(raw[k]); k++; }
+          items.push({text: chunk.join(' '), cat:'lit'});
+          i=k; continue;
+        }
+      }
       items.push({text:w, cat:'coord'});
       vState='none'; i++; continue;
     }
 
     if(SUBORD.has(lw)){
       if(TIME_HINT.has(lw)){
-        let j=i+1, contentCount=0, looksLikeClause=false, sawContent=false;
+        let j=i+1, contentCount=0, looksLikeClause=false, sawHeadNoun=false;
         while(j<n && !/^[,.!?;]$/.test(raw[j]) && !isBoundaryWord(lower(raw[j]))){
           const lw2 = lower(raw[j]);
           if(DET.has(lw2)){ j++; continue; }
           contentCount++;
           if(AUX.has(lw2)) looksLikeClause=true;
-          if(sawContent && !looksAdj(lw2)) looksLikeClause=true;
-          sawContent = true; j++;
+          // A run of adjectives ending in one noun is still just a short phrase ("the big
+          // match") — only a SECOND non-adjective word (a real second clause element, like
+          // a verb or another noun) means this is more than a simple noun phrase.
+          if(looksAdj(lw2) || taggerAdj(j)){ j++; continue; }
+          if(sawHeadNoun) looksLikeClause = true;
+          sawHeadNoun = true; j++;
         }
         if(!looksLikeClause && contentCount<=2){
           let k=i; const chunk=[];
@@ -1536,6 +1607,33 @@ function autoTagSentence(str){
       i++; continue;
     }
 
+    if(lw==='to'){
+      // "to" plays two completely different roles: a preposition of direction ("sails to
+      // Newfoundland", "moved to a school") or an infinitive marker ("wants to travel").
+      // A determiner or a proper noun right after it means direction — sweep it as a
+      // "where" phrase like any other preposition. A bare lower-case word means it's
+      // introducing an infinitive verb, which this tool has no dedicated colour for, so it
+      // reads as the clause's "doing" — much closer to the truth than letting a stray "to"
+      // get mistaken for a fresh subject and the real verb after it fall into "what".
+      const nextLw = (i+1<n) ? lower(raw[i+1]) : '';
+      const nextIsDirectional = i+1<n && (DET.has(nextLw) || isProperNounTag(i+1) || /^[A-Z]/.test(raw[i+1]));
+      if(nextIsDirectional){
+        let k=i; const chunk=[];
+        while(k<n && !/^[,.!?;]$/.test(raw[k]) && !(k>i && isBoundaryWord(lower(raw[k])))){ chunk.push(raw[k]); k++; }
+        items.push({text: chunk.join(' '), cat:'where'});
+        i=k; continue;
+      }
+      if(i+1<n && !/^[,.!?;]$/.test(raw[i+1])){
+        items.push({text: w+' '+raw[i+1], cat:'doing'});
+        vState = 'full';
+        i += 2; sentenceStart=false; continue;
+      }
+      // "to" with nothing usable after it (end of sentence) — leave it uncoloured rather
+      // than guessing.
+      items.push({text:w, cat:'lit'});
+      i++; continue;
+    }
+
     if(TITLES.has(lw)){
       // A title (Mr, Dr, Aunt…) introduces a proper name: keep consuming capitalised
       // words as part of the same name, e.g. "Mr Fox" stays one who/what block.
@@ -1566,6 +1664,14 @@ function autoTagSentence(str){
         break;
       }
       let hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
+      // If we already gathered adjective(s) and the next word is tagged as a verb, it can't
+      // be this phrase's noun — one of the "adjectives" is actually the noun itself, and
+      // this word is the clause's real verb, still waiting to be tagged by the main loop
+      // (e.g. "The plastic bends": "plastic" mistaken for an adjective, "bends" is not a
+      // noun to swallow, it's the verb).
+      if(hasNoun && adjWords.length && /^VB/.test(posOf(k))){
+        hasNoun = false;
+      }
       let nounWord = hasNoun ? raw[k] : null;
       if(hasNoun) k++;
       // A possessive ("the cat's") isn't complete on its own — it needs the noun it
@@ -1582,12 +1688,15 @@ function autoTagSentence(str){
         hasNoun = true;
       }
       let cat = (vState==='full' || vState==='aux') ? 'what' : 'who';
+      if(!adjWords.length && nounWord && TIME_PHRASE_DET.has(lw) && TIME_NOUNS.has(lower(nounWord))){
+        cat = 'when';
+      }
       // A noun phrase right after a coordinating conjunction, with nothing but the sentence
       // end following it (e.g. "the lolly and the fruit."), is continuing the previous list
       // rather than starting a new clause — so it keeps the category from before the
       // conjunction instead of defaulting to "who". A clause with its own verb still
       // following (e.g. "...and the adult talks.") is unaffected, since that's not sentence-final.
-      if(items.length>=2 && items[items.length-1].cat==='coord'){
+      if(cat!=='when' && items.length>=2 && items[items.length-1].cat==='coord'){
         const isSentenceFinal = k>=n || /^[,.!?;]$/.test(raw[k]);
         const prevCat = items[items.length-2].cat;
         if(isSentenceFinal && ['what','where','when','how','describe'].includes(prevCat)){
@@ -1632,12 +1741,25 @@ function autoTagSentence(str){
         break;
       }
       let hasNoun2 = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
+      // Same verb guard as the determiner branch: don't swallow the clause's real verb as
+      // if it were this phrase's noun just because an adjective came before it.
+      if(hasNoun2 && adjWords2.length && /^VB/.test(posOf(k))){
+        hasNoun2 = false;
+      }
       let nounWord2 = hasNoun2 ? raw[k] : null;
       if(hasNoun2) k++;
       // Same safety net as the determiner branch above: an adjective run must end in a noun.
       if(!hasNoun2 && adjWords2.length){
         nounWord2 = adjWords2.pop().replace(/,$/, '');
         hasNoun2 = true;
+      }
+      // "last night", "next week": words like "last"/"next" aren't in the determiner set
+      // (they're grammatically adjectives), so they reach this branch rather than the
+      // determiner one — but a bare time phrase like this reads better as one "when" block
+      // than as a separate describe chip plus an object.
+      if(hasNoun2 && adjWords2.length===1 && TIME_PHRASE_DET.has(lower(adjWords2[0])) && TIME_NOUNS.has(lower(nounWord2))){
+        items.push({cat:'when', text: adjWords2[0]+' '+nounWord2});
+        i=k; sentenceStart=false; continue;
       }
       adjWords2.forEach(aw => items.push({cat:'describe', text:aw}));
       if(hasNoun2){
@@ -1648,12 +1770,17 @@ function autoTagSentence(str){
       i=k; sentenceStart=false; continue;
     }
 
-    // Multi-word proper noun with no title (e.g. "Peter Rabbit"): if the tagger sees this
-    // word and the previous word as both a proper noun, and we just tagged that previous word
-    // as the subject with no verb seen yet, this word continues the same name rather than
-    // being mistaken for the verb.
+    // A bare noun-noun compound subject ("Roman army", "police officer", "football team",
+    // "Thomas Edison"): once a subject is under way with no verb seen yet, a following bare
+    // word that is itself capitalised (virtually always a name continuing) or tagged as a
+    // noun (NN/NNS) by the tagger is continuing that same noun phrase — not introducing a
+    // verb, which is what the position alone would otherwise suggest. This is the single
+    // biggest source of "ordinary noun mistaken for the verb" errors this tagger sees:
+    // without it, "The Roman army built roads" tags "army" as the verb and "built" as its
+    // object, purely because "army" happens to be the first bare word after the subject.
     if(clauseHasSubject && vState==='none' && items.length && items[items.length-1].cat==='who'
-       && /^[A-Z]/.test(w) && isProperNounTag(i) && i>0 && isProperNounTag(i-1)){
+       && !AUX.has(lw) && (/^[A-Z]/.test(w) ? !sentenceStart : (posOf(i)==='NN' || posOf(i)==='NNS'))
+       && (SAFE_NOUN.has(lw) || hasLaterVerb(i+1))){
       items[items.length-1].text += ' ' + w;
       sentenceStart=false; i++; continue;
     }
@@ -1665,6 +1792,22 @@ function autoTagSentence(str){
     // "eats for they are hungry" (new clause), so a pronoun here overrides it.
     if(items.length && items[items.length-1].cat==='coord' && SUBJECT_PRONOUNS.has(lw)){
       items.push({text:w, cat:'who'}); clauseHasSubject=true;
+    } else if(items.length>=2 && items[items.length-1].cat==='coord' && items[items.length-2].cat==='who'
+       && vState==='none' && (/^[A-Z]/.test(w) || posOf(i)==='NN' || posOf(i)==='NNS' || isProperNounTag(i))
+       && hasLaterVerb(i+1)){
+      // "Tom and Jerry played chess": a bare noun straight after "and", following an
+      // already-tagged subject with no verb yet, is joining that subject rather than
+      // becoming a stray verb — same reasoning as the compound-subject check above, just
+      // with a conjunction in between.
+      items.push({text:w, cat:'who'});
+      sentenceStart=false; i++; continue;
+    } else if(items.length>=2 && items[items.length-1].cat==='coord'
+       && (i+1>=n || /^[,.!?;]$/.test(raw[i+1])) && ['what','where','when','how','describe'].includes(items[items.length-2].cat)){
+      // "London and Cardiff.": a bare word right before the sentence/clause end, straight
+      // after a conjunction, is continuing that earlier list (of objects, places, etc.)
+      // rather than starting a new clause — mirrors the equivalent determiner-led case above.
+      items.push({text:w, cat: items[items.length-2].cat});
+      sentenceStart=false; i++; continue;
     } else if(!clauseHasSubject){
       items.push({text:w, cat:'who'}); clauseHasSubject=true;
     } else if(vState==='none' || vState==='aux'){

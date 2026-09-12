@@ -599,7 +599,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26h
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26i
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -702,29 +702,29 @@ const YEARS = [
   intro:"Year 1 pupils build a solid foundation in sentence construction: simple sentences with a subject (who) and a verb (doing), and joining words or clauses with 'and'.",
   structures:[
     { title:"Simple sentence", note:"who + doing",
-      pattern:[ s('who','The child'), s('doing','eats') ],
-      examples:["The child eats.","The child ate."] },
+      pattern:[ s('who','The plastic'), s('doing','bends') ],
+      examples:["The plastic bends.","The plastic bent."] },
     { title:"Simple sentence", note:"who + doing + what",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly') ],
-      examples:["The child eats a lolly.","The child ate a lolly."] },
+      pattern:[ s('who','The seed'), s('doing','needs'), s('what','water') ],
+      examples:["The seed needs water.","The seed needed water."] },
     { title:"Simple sentence", note:"who + linking verb (is/was) + describe",
-      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('describe','happy') ],
-      examples:["The child is happy.","The child was happy."] },
+      pattern:[ s('who','The glass'), s('aux','is',{options:['is','was']}), s('describe','transparent') ],
+      examples:["The glass is transparent.","The glass was transparent."] },
     { title:"Simple sentence using 'and'", note:"who + doing + and + doing",
-      pattern:[ s('who','The child'), s('doing','eats'), lit('and'), s('doing','plays') ],
-      examples:["The child eats and plays.","The child ate and played."] },
+      pattern:[ s('who','The bird'), s('doing','flies'), lit('and'), s('doing','sings') ],
+      examples:["The bird flies and sings.","The bird flew and sang."] },
     { title:"Simple sentence using 'and'", note:"who + doing + what + and + what",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), lit('and'), s('what','the fruit') ],
-      examples:["The child eats the lolly and the fruit.","The child ate the lolly and the fruit."] },
+      pattern:[ s('who','The pupil'), s('doing','locates'), s('what','London'), lit('and'), s('what','Cardiff') ],
+      examples:["The pupil locates London and Cardiff.","The pupil located London and Cardiff."] },
     { title:"Simple sentence using 'and'", note:"who + linking verb + describe + and + describe",
-      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('describe','happy'), lit('and'), s('describe','excited') ],
-      examples:["The child is happy and excited.","The child was happy and excited."] },
+      pattern:[ s('who','The weather'), s('aux','is',{options:['is','was']}), s('describe','cold'), lit('and'), s('describe','windy') ],
+      examples:["The weather is cold and windy.","The weather was cold and windy."] },
     { title:"Compound sentence using 'and'", note:"Joining two main clauses: who + doing + and + who + doing",
-      pattern:[ s('who','The child'), s('doing','plays'), lit('and'), s('who','the adult'), s('doing','talks') ],
-      examples:["The child plays and the adult talks.","The child played and the adult talked."] },
+      pattern:[ s('who','The sun'), s('doing','shines'), lit('and'), s('who','the flowers'), s('doing','grow') ],
+      examples:["The sun shines and the flowers grow.","The sun shone and the flowers grew."] },
     { title:"Compound sentence using 'and'", note:"Vary the structure, e.g. who + doing + what + and + who + doing",
-      pattern:[ s('who','The child'), s('doing','kicks'), s('what','the ball'), lit('and'), s('who','the adult'), s('doing','watches') ],
-      examples:["The child kicks the ball and the adult watches.","The child kicked the ball and the adult watched."] }
+      pattern:[ s('who','Baird'), s('doing','invents'), s('what','the television'), lit('and'), s('who','the family'), s('doing','watches') ],
+      examples:["Baird invents the television and the family watches.","Baird invented the television and the family watched."] }
   ]
 },
 {
@@ -732,23 +732,23 @@ const YEARS = [
   intro:"Year 2 pupils expand sentences with adjectives and adverbs of manner ('how'), meet a wider range of co-ordinating conjunctions (but, so, or), start complex sentences with 'because', and use the progressive verb form.",
   structures:[
     { title:"Recap compound sentence", note:"Co-ordinating conjunctions: and → but → so → or",
-      pattern:[ s('who','The child'), s('doing','cries'), s('coord','so',{options:['so','but','or','and']}), s('who','the adult'), s('doing','helps'), s('what','them') ],
-      examples:["The child cries so the adult helps them.","The child cried so the adult helped them."] },
+      pattern:[ s('who','The fire'), s('doing','spreads'), s('coord','so',{options:['so','but','or','and']}), s('who','the people'), s('doing','lose'), s('what','their homes') ],
+      examples:["The fire spreads so the people lose their homes.","The fire spread so the people lost their homes."] },
     { title:"Simple sentence with expanded noun phrase", note:"who + doing + describe + what (add commas for lists of adjectives when ready)",
-      pattern:[ s('who','The child'), s('doing','eats'), s('describe','delicious'), s('what','the lolly') ],
-      examples:["The child eats the delicious lolly.","The child ate the delicious lolly."] },
+      pattern:[ s('who','Brunel'), s('doing','builds'), s('describe','incredible'), s('what','the bridge') ],
+      examples:["Brunel builds the incredible bridge.","Brunel built the incredible bridge."] },
     { title:"Simple sentence", note:"who + doing + how",
-      pattern:[ s('who','The child'), s('doing','eats'), s('how','quickly') ],
-      examples:["The child eats quickly.","The child ate quickly."] },
+      pattern:[ s('who','The climate'), s('doing','varies'), s('how','greatly') ],
+      examples:["The climate varies greatly.","The climate varied greatly."] },
     { title:"Simple sentence", note:"who + doing + what + how",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('how','quickly') ],
-      examples:["The child eats the lolly quickly.","The child ate the lolly quickly."] },
+      pattern:[ s('who','The nurse'), s('doing','treats'), s('what','the patients'), s('how','kindly') ],
+      examples:["The nurse treats the patients kindly.","The nurse treated the patients kindly."] },
     { title:"Complex sentence using 'because'", note:"Subordinating conjunctions: because → when → if → that",
-      pattern:[ s('who','The child'), s('doing','runs'), s('subord','because',{options:['because','when','if','that']}), s('who','they'), s('doing','want'), s('what','the ball') ],
-      examples:["The child runs because they want the ball.","The child ran because they wanted the ball."] },
+      pattern:[ s('who','Animals'), s('doing','disappear'), s('subord','because',{options:['because','when','if','that']}), s('who','people'), s('doing','destroy'), s('what','their habitat') ],
+      examples:["Animals disappear because people destroy their habitat.","Animals disappeared because people destroyed their habitat."] },
     { title:"Simple progressive sentence", note:"who + is/was (auxiliary) + doing (-ing form)",
-      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('doing','eating') ],
-      examples:["The child is eating.","The child was eating."] }
+      pattern:[ s('who','The habitat'), s('aux','is',{options:['is','was']}), s('doing','changing') ],
+      examples:["The habitat is changing.","The habitat was changing."] }
   ]
 },
 {
@@ -756,26 +756,26 @@ const YEARS = [
   intro:"Year 3 pupils recap and extend co-ordinating and subordinating conjunctions (yet, as, while, until, since), add 'where' and 'when' to simple sentences, and meet the present perfect verb form (has/have + past tense).",
   structures:[
     { title:"Recap compound sentence", note:"Co-ordinating conjunctions and/but/so/or → introduce 'yet'",
-      pattern:[ s('who','The child'), s('doing','kicks'), s('what','the ball'), s('coord','so',{options:['so','yet','and','but','or']}), s('who','the ball'), s('doing','deflates') ],
-      examples:["The child kicks the ball so the ball deflates.","The child kicked the ball so the ball deflated."] },
+      pattern:[ s('who','The magnet'), s('doing','attracts'), s('what','the nail'), s('coord','so',{options:['so','yet','and','but','or']}), s('who','the nail'), s('doing','moves') ],
+      examples:["The magnet attracts the nail so the nail moves.","The magnet attracted the nail so the nail moved."] },
     { title:"Recap complex sentence", note:"Subordinating conjunction 'because' → introduce as/while/until/since",
-      pattern:[ s('who','The child'), s('doing','eats'), s('subord','while',{options:['while','as','until','since','because']}), s('who','the adult'), s('doing','reads'), s('what','a book') ],
-      examples:["The child eats while the adult reads a book.","The child ate while the adult read a book."] },
+      pattern:[ s('who','Magma'), s('doing','rises'), s('subord','while',{options:['while','as','until','since','because']}), s('who','the volcano'), s('doing','builds'), s('what','pressure') ],
+      examples:["Magma rises while the volcano builds pressure.","Magma rose while the volcano built pressure."] },
     { title:"Simple sentence", note:"who + doing + where",
-      pattern:[ s('who','The child'), s('doing','eats'), s('where','at the table') ],
-      examples:["The child eats at the table.","The child ate at the table."] },
+      pattern:[ s('who','Cabot'), s('doing','sails'), s('where','to Newfoundland') ],
+      examples:["Cabot sails to Newfoundland.","Cabot sailed to Newfoundland."] },
     { title:"Simple sentence", note:"who + doing + what + where",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly'), s('where','at the table') ],
-      examples:["The child eats a lolly at the table.","The child ate a lolly at the table."] },
+      pattern:[ s('who','The geographer'), s('doing','compares'), s('what','biomes'), s('where','in the Mediterranean') ],
+      examples:["The geographer compares biomes in the Mediterranean.","The geographer compared biomes in the Mediterranean."] },
     { title:"Simple sentence", note:"who + doing + when",
-      pattern:[ s('who','The child'), s('doing','eats'), s('when','before school') ],
-      examples:["The child eats before school.","The child ate before school."] },
+      pattern:[ s('who','The plotters'), s('doing','meet'), s('when','in November') ],
+      examples:["The plotters meet in November.","The plotters met in November."] },
     { title:"Simple sentence", note:"who + doing + what + when",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly'), s('when','before school') ],
-      examples:["The child eats a lolly before school.","The child ate a lolly before school."] },
+      pattern:[ s('who','The armies'), s('doing','fight'), s('what','the battle'), s('when','in 1642') ],
+      examples:["The armies fight the battle in 1642.","The armies fought the battle in 1642."] },
     { title:"Simple present perfect sentence", note:"who + has/have (auxiliary) + doing (past participle)",
-      pattern:[ s('who','The child'), s('aux','has',{options:['has','have']}), s('doing','eaten') ],
-      examples:["The child has eaten.","The children have eaten."] }
+      pattern:[ s('who','The caterpillar'), s('aux','has',{options:['has','have']}), s('doing','changed') ],
+      examples:["The caterpillar has changed.","The caterpillars have changed."] }
   ]
 },
 {
@@ -783,20 +783,20 @@ const YEARS = [
   intro:"Year 4 pupils recap complex sentences and add although/before/after, explore fronted adverbial phrases, move the subordinate clause to the start of a sentence, and expand noun phrases with extra nouns and prepositional phrases.",
   structures:[
     { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2/Y3 → introduce although/before/after",
-      pattern:[ s('who','The child'), s('doing','eats'), s('subord','before',{options:['before','after','although']}), s('who','the adult'), s('doing','serves'), s('what','dinner') ],
-      examples:["The child eats before the adult serves dinner.","The child ate before the adult served dinner."] },
+      pattern:[ s('who','The Anglo-Saxons'), s('doing','settle'), s('subord','before',{options:['before','after','although']}), s('who','the Vikings'), s('doing','raid'), s('what','the coast') ],
+      examples:["The Anglo-Saxons settle before the Vikings raid the coast.","The Anglo-Saxons settled before the Vikings raided the coast."] },
     { title:"Simple sentence with a fronted adverbial phrase", note:"how / where / when + comma + who + doing + what",
-      pattern:[ s('when','Before dinner'), comma(), s('who','the child'), s('doing','eats'), s('what','a lolly') ],
-      examples:["Before dinner, the child eats a lolly.","Before dinner, the child ate a lolly."] },
+      pattern:[ s('when','In AD793'), comma(), s('who','the Vikings'), s('doing','raid'), s('what','Lindisfarne') ],
+      examples:["In AD793, the Vikings raid Lindisfarne.","In AD793, the Vikings raided Lindisfarne."] },
     { title:"Complex sentence", note:"Moving the subordinate clause to the beginning of the sentence",
-      pattern:[ s('subord','As',{options:['As','Before','After','Although']}), s('who','the child'), s('doing','eats'), s('what','the lolly'), comma(), s('who','the adult'), s('doing','pays') ],
-      examples:["As the child eats the lolly, the adult pays.","As the child ate the lolly, the adult paid."] },
+      pattern:[ s('subord','As',{options:['As','Before','After','Although']}), s('who','the switch'), s('doing','closes'), s('what','the circuit'), comma(), s('who','the bulb'), s('doing','lights') ],
+      examples:["As the switch closes the circuit, the bulb lights.","As the switch closed the circuit, the bulb lit."] },
     { title:"Simple sentence with noun phrase expanded by additional nouns", note:"who + doing + what + what",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','an ice'), s('what','lolly') ],
-      examples:["The child eats an ice lolly.","The child ate an ice lolly."] },
+      pattern:[ s('who','The scientist'), s('doing','examines'), s('what','an arm'), s('what','bone') ],
+      examples:["The scientist examines an arm bone.","The scientist examined an arm bone."] },
     { title:"Simple sentence with noun phrase expanded by a prepositional phrase", note:"who + doing + what + where",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('where','from the shop') ],
-      examples:["The child eats the lolly from the shop.","The child ate the lolly from the shop."] }
+      pattern:[ s('who','The boat'), s('doing','carries'), s('what','goods'), s('where','along the Thames') ],
+      examples:["The boat carries goods along the Thames.","The boat carried goods along the Thames."] }
   ]
 },
 {
@@ -804,26 +804,26 @@ const YEARS = [
   intro:"Year 5 pupils widen their conjunction range further (for, unless, whenever, whereas), use adverbs of possibility, build modal-verb sentences, and learn to embed subordinate and relative clauses within a sentence — not just at the start or end.",
   structures:[
     { title:"Recap compound sentence", note:"Co-ordinating conjunctions from previous years → introduce 'for'",
-      pattern:[ s('who','The child'), s('doing','eats'), s('coord','for',{options:['for','and','but','so','or','yet']}), s('who','they'), s('aux','are',{options:['are','is']}), s('describe','hungry') ],
-      examples:["The child eats for they are hungry.","The child ate for they were hungry."] },
+      pattern:[ s('who','Boudicca'), s('doing','fights'), s('coord','for',{options:['for','and','but','so','or','yet']}), s('who','the Iceni'), s('aux','are',{options:['are','is']}), s('describe','angry') ],
+      examples:["Boudicca fights for the Iceni are angry.","Boudicca fought for the Iceni were angry."] },
     { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2-Y4 → introduce unless/whenever/whereas",
-      pattern:[ s('who','The child'), s('doing','laughs'), s('subord','whenever',{options:['whenever','unless','whereas']}), s('who','they'), s('doing','hear'), s('what','a joke') ],
-      examples:["The child laughs whenever they hear a joke.","The child laughed whenever they heard a joke."] },
+      pattern:[ s('who','Egyptians'), s('doing','celebrate'), s('subord','whenever',{options:['whenever','unless','whereas']}), s('who','a new pharaoh'), s('doing','takes'), s('what','the throne') ],
+      examples:["Egyptians celebrate whenever a new pharaoh takes the throne.","Egyptians celebrated whenever a new pharaoh took the throne."] },
     { title:"Simple sentence with an adverb for possibility", note:"who + linking verb + adverb + describe",
-      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('how','completely'), s('describe','overwhelmed') ],
-      examples:["The child is completely overwhelmed.","The child was completely overwhelmed."] },
+      pattern:[ s('who','The universe'), s('aux','is',{options:['is','was']}), s('how','truly'), s('describe','enormous') ],
+      examples:["The universe is truly enormous.","The universe was truly enormous."] },
     { title:"Simple modal sentence", note:"who + modal verb + doing (+ what)",
-      pattern:[ s('who','The child'), s('aux','might',{options:['might','can','could','may','must','shall','should','will','would']}), s('doing','play'), s('what','football') ],
-      examples:["The child might play football.","The child might play."] },
+      pattern:[ s('who','The pulley'), s('aux','might',{options:['might','can','could','may','must','shall','should','will','would']}), s('doing','lift'), s('what','the weight') ],
+      examples:["The pulley might lift the weight.","The pulley might lift."] },
     { title:"Complex sentence", note:"Embed the subordinate clause within a sentence",
-      pattern:[ s('who','The child'), comma(), s('subord','as',{options:['as']}), s('who','the adult'), s('doing','tells'), s('what','a joke'), comma(), s('doing','laughs') ],
-      examples:["The child, as the adult tells a joke, laughs.","The child, as the adult told a joke, laughed."] },
+      pattern:[ s('who','The river'), comma(), s('subord','as',{options:['as']}), s('who','the current'), s('doing','carries'), s('what','sand'), comma(), s('doing','widens') ],
+      examples:["The river, as the current carries sand, widens.","The river, as the current carried sand, widened."] },
     { title:"Complex sentence", note:"Embed a relative clause within a sentence",
-      pattern:[ s('who','The child'), comma(), s('relative','who is feeling very content'), comma(), s('doing','eats'), s('what','their lolly') ],
-      examples:["The child, who is feeling very content, eats their lolly.","The child, who was feeling very content, ate their lolly."] },
+      pattern:[ s('who','Tutankhamun'), comma(), s('relative','who is a young pharaoh'), comma(), s('doing','rules'), s('what','Egypt') ],
+      examples:["Tutankhamun, who is a young pharaoh, rules Egypt.","Tutankhamun, who was a young pharaoh, ruled Egypt."] },
     { title:"Complex sentence", note:"Include a relative clause at the end of the sentence",
-      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('relative','that they won in a competition') ],
-      examples:["The child eats the lolly that they won in a competition.","The child ate the lolly that they won in a competition."] }
+      pattern:[ s('who','The Romans'), s('doing','build'), s('what','the wall'), s('relative','that protects the empire') ],
+      examples:["The Romans build the wall that protects the empire.","The Romans built the wall that protected the empire."] }
   ]
 },
 {
@@ -831,11 +831,11 @@ const YEARS = [
   intro:"Year 6 pupils consolidate and refine advanced sentence structures: a final widening of subordinating conjunctions (in order to, provided that, supposing), and the passive voice, where the subject becomes the recipient of the action rather than the one doing it.",
   structures:[
     { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2-Y5 → introduce in order to/provided that/supposing",
-      pattern:[ s('who','The child'), s('doing','smiles'), s('subord','provided that',{options:['provided that','in order to','supposing']}), s('who','the adult'), s('doing','buys'), s('what','the lolly') ],
-      examples:["The child smiles provided that the adult buys the lolly.","The child smiled provided that the adult bought the lolly."] },
+      pattern:[ s('who','Alexander'), s('doing','conquers'), s('subord','provided that',{options:['provided that','in order to','supposing']}), s('who','the army'), s('doing','follows'), s('what','the plan') ],
+      examples:["Alexander conquers provided that the army follows the plan.","Alexander conquered provided that the army followed the plan."] },
     { title:"Simple passive sentence", note:"The object of the active sentence becomes the subject: what (as agent) + is/was + doing (past participle) + by + who",
-      pattern:[ s('what','The lolly'), s('aux','is',{options:['is','was']}), s('doing','eaten'), lit('by'), s('who','the child') ],
-      examples:["The lolly is eaten by the child.","The lolly was eaten by the child."] }
+      pattern:[ s('what','The animal'), s('aux','is',{options:['is','was']}), s('doing','classified'), lit('by'), s('who','the scientist') ],
+      examples:["The animal is classified by the scientist.","The animal was classified by the scientist."] }
   ]
 }
 ];

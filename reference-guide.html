@@ -214,6 +214,7 @@
   @media print{
     body{ background:#fff; }
     .page{ box-shadow:none; margin:0; width:auto; min-height:0; }
+    .page.cover{ min-height:269mm; }
     .print-controls{ display:none; }
     @page{ size:A4; margin:14mm; }
   }
@@ -271,7 +272,7 @@
   <div class="page-header"><h1>Glossary</h1><div class="tag">Reference Guide</div></div>
   <p class="lede">Grammatical terms used throughout this guide.</p>
   <dl class="glossary" id="glossaryList"></dl>
-  <div class="note-box">This is not necessarily an exhaustive glossary of every term Jacobs Education's original document defines — it covers the terms most relevant to the structures in this guide. Ask if a term you need is missing.</div>
+  <div class="note-box">This is the full glossary from Jacobs Education's original document (Appendix 3), listed alphabetically here for ease of reference.</div>
   <div style="margin-top:16px; font-size:0.7rem; color:var(--muted); text-align:right;">v12.09.26f</div>
 </div>
 
@@ -532,22 +533,29 @@ YEARS.forEach(y=>{
 
 /* ---------- Glossary content ---------- */
 const GLOSSARY = [
-  ["Sentence","A complete idea that usually contains a subject and a verb. In writing, a sentence begins with a capital letter and ends with a full stop, question mark, or exclamation mark."],
-  ["Simple Sentence","A sentence containing only one main clause, e.g. 'The child eats the lolly.'"],
-  ["Compound Sentence","A sentence containing two or more main clauses joined by a co-ordinating conjunction, e.g. 'and', 'but', 'so'."],
-  ["Main Clause","An independent clause that can stand alone as a complete sentence, e.g. 'The child eats the lolly.'"],
-  ["Subordinate Clause","A clause that depends on a main clause and cannot stand alone, often introduced by a subordinating conjunction such as 'when' or 'because', e.g. 'because the child was hungry'."],
-  ["Subordinating Conjunction","A word or phrase that introduces a subordinate clause and links it to the main clause, e.g. 'because', 'although', 'unless'."],
-  ["Relative Clause","A type of subordinate clause introduced by a relative pronoun (who, which, that) that gives more information about a noun, e.g. 'The child, who was smiling, ate a lolly.'"],
-  ["Verb","A word that describes an action, state, or occurrence, e.g. 'run', 'is', 'explains'."],
-  ["Modal Verb","A type of auxiliary verb that expresses possibility, ability, permission, necessity, or obligation — e.g. can, could, might, must."],
-  ["Progressive Verb Form","A verb form describing an ongoing or in-progress action, formed with 'to be' + the -ing form of the main verb, e.g. 'is eating'."],
-  ["Present Perfect Verb Form","A verb form describing a completed action linked to another time, formed with 'to have' + the past participle of the main verb, e.g. 'has eaten'."],
-  ["Passive Voice","A sentence structure where the subject receives the action rather than performing it, e.g. 'The lolly was eaten by the child.'"],
-  ["Noun Phrase","A phrase built around a noun and any modifiers, such as adjectives or determiners, e.g. 'the big, red ball'."],
-  ["Fronted Adverbial","A word or phrase placed at the start of a sentence to describe the action that follows, e.g. 'Before dinner, the child ate a lolly.'"],
-  ["Preposition","A word showing the relationship between a noun (or pronoun) and other words in a sentence — often direction, location, time, or manner."],
-  ["Prepositional Phrase","A phrase that begins with a preposition and modifies a noun or verb, e.g. 'on the table', 'under the bench'."]
+  ["Adjective","A word that describes a noun (e.g., happy, red, tall)."],
+  ["Adverb","A word that modifies a verb, an adjective, or another adverb, often describing how, when, where, or to what extent something happens (e.g., quickly, yesterday, very)."],
+  ["Auxiliary Verb","A particular type of verb which is used alongside a main verb to form different tenses, moods, voices, or aspects."],
+  ["Clause","A group of words containing a subject and a verb. Clauses can be independent (main clauses) or dependent (subordinate clauses)."],
+  ["Colourful Semantics","An approach that breaks down sentences into colour-coded components (e.g., who, doing, what, where). It helps pupils understand sentence structure by focusing on grammatical roles."],
+  ["Complex Sentence","A sentence that includes one main clause and at least one subordinate clause, joined by a subordinating conjunction (e.g., because, when, although)."],
+  ["Compound Sentence","A sentence containing two or more main clauses joined by a co-ordinating conjunction (e.g., and, but, so)."],
+  ["Co-ordinating Conjunction","A word that joins two main clauses of equal importance (e.g., and, but, or, so). They are also used to link elements of equal grammatical importance (e.g., The child eats lollies and fruit.)"],
+  ["Fronted Adverbial","A word or phrase placed at the beginning of a sentence to describe the action that follows (e.g., Before dinner, the child ate a lolly.)."],
+  ["Main Clause","An independent clause that can stand alone as a complete sentence (e.g., The child eats the lolly.)."],
+  ["Modal Verbs","A specific type of auxiliary verb that express possibility, ability, permission, necessity, or obligation."],
+  ["Noun Phrase","A phrase that includes a noun and any modifiers, such as adjectives or determiners (e.g., the big, red ball)."],
+  ["Passive Voice","A sentence structure where the subject is the recipient of the action rather than the object (e.g., The lolly was eaten by the child)."],
+  ["Preposition","A word that shows the relationship between a noun (or pronoun) and other words in a sentence. It often indicates direction, location, time, or how something is related to something else."],
+  ["Prepositional Phrase","A phrase that begins with a preposition and modifies a noun or verb (e.g., on the table, under the bench)."],
+  ["Present Perfect Verb Form","A verb form which describes an action that is completed or linked to another time. It is formed with the auxiliary verb \"to have\" + the past participle of the main verb."],
+  ["Progressive Verb Form","A verb form which describes an action that is ongoing or in progress. It is formed with the auxiliary verb \"to be\" + the -ing form (present participle) of the main verb."],
+  ["Relative Clause","A type of subordinate clause introduced by a relative pronoun (who, which, that) that provides more information about a noun (e.g., The child, who was smiling, ate a lolly)."],
+  ["Sentence","A complete idea, usually containing a subject and a verb. In writing, sentences begin with a capital letter and end with a full stop, question mark, or exclamation mark."],
+  ["Simple Sentence","A sentence that contains only one main clause (e.g., The child eats the lolly)."],
+  ["Subordinate Clause","A clause that depends on the main clause and cannot stand alone. Often introduced by subordinating conjunctions such as because, when, or if (e.g., because the child was hungry)."],
+  ["Subordinating Conjunction","A word or phrase that introduces a subordinate clause, linking it to the main clause (e.g., because, although, unless)."],
+  ["Verb","A word that describes an action, state, or occurrence (e.g., run, is, explains)."]
 ];
 const glossaryEl = document.getElementById('glossaryList');
 GLOSSARY.forEach(([term, def])=>{

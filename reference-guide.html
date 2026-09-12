@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Colour-Coded Sentence Progression — Reference Guide</title>
+<style>
+  :root{
+    --brand:#1798d3;
+    --dark:#0a0101;
+    --who:#e8792e;
+    --doing:#f2c94c;
+    --what:#4caf6d;
+    --where:#2e74c4;
+    --when:#a35332;
+    --how:#cb79bb;
+    --describe:#a873be;
+    --coord:#c0392b;
+    --subord:#2e5fa3;
+    --relative-bg:#e9e9f1;
+    --relative-border:#7a7a8c;
+    --lit-bg:#e2e2e2;
+    --ink:#1c1c1c;
+    --muted:#5a6470;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    color:var(--ink);
+    background:#e9edf0;
+  }
+  .page{
+    width:210mm;
+    min-height:296mm;
+    margin:6mm auto;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+    padding:16mm 16mm;
+    position:relative;
+    page-break-after:always;
+  }
+  .page:last-child{ page-break-after:auto; }
+
+  /* ---------- Cover ---------- */
+  .cover{
+    background:var(--dark);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:0 16mm;
+  }
+  .cover .rainbow{
+    display:flex;
+    gap:10px;
+    margin-bottom:36px;
+  }
+  .cover .rainbow div{
+    width:16px;
+    height:70px;
+    border-radius:8px;
+    transform:rotate(var(--rot));
+  }
+  .cover h1{
+    font-size:2.6rem;
+    margin:0 0 10px;
+    letter-spacing:0.01em;
+  }
+  .cover h2{
+    font-size:1.3rem;
+    font-weight:400;
+    color:#bcd8e8;
+    margin:0 0 50px;
+  }
+  .cover .credit{
+    font-size:0.9rem;
+    color:#9fb3bd;
+    max-width:420px;
+    line-height:1.5;
+  }
+  .cover img.logo{
+    height:56px;
+    background:#fff;
+    border-radius:8px;
+    padding:6px;
+    margin-bottom:40px;
+  }
+
+  /* ---------- Generic page chrome ---------- */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:3px solid var(--brand);
+    padding-bottom:8px;
+    margin-bottom:18px;
+  }
+  .page-header h1{
+    font-size:1.5rem;
+    margin:0;
+    color:var(--dark);
+  }
+  .page-header .tag{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .lede{
+    font-size:0.95rem;
+    line-height:1.6;
+    color:#333;
+    margin:0 0 18px;
+  }
+  h3.section{
+    font-size:1.05rem;
+    color:var(--dark);
+    border-left:5px solid var(--brand);
+    padding-left:10px;
+    margin:22px 0 10px;
+  }
+
+  /* ---------- Colour key ---------- */
+  .key-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:14px;
+    margin-top:10px;
+  }
+  .key-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border:1px solid #e2e6ea;
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .key-swatch{
+    width:52px;
+    height:52px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .key-swatch img{ width:30px; height:30px; object-fit:contain; }
+  .key-text b{ display:block; font-size:0.9rem; color:var(--dark); }
+  .key-text span{ font-size:0.78rem; color:var(--muted); }
+
+  /* ---------- Year intro ---------- */
+  .year-band{
+    background:var(--dark);
+    color:#fff;
+    border-radius:10px;
+    padding:16px 20px;
+    margin-bottom:16px;
+  }
+  .year-band h1{ margin:0 0 6px; font-size:1.6rem; }
+  .year-band p{ margin:0; font-size:0.88rem; line-height:1.55; color:#dbe7ec; }
+
+  /* ---------- Structure card (reused visual language from the web tool) ---------- */
+  .structure-card{
+    border:1px solid #e2e6ea;
+    border-radius:10px;
+    padding:12px 14px 14px;
+    margin-bottom:12px;
+    break-inside:avoid;
+  }
+  .structure-card h4{ margin:0 0 2px; font-size:0.98rem; color:var(--dark); }
+  .structure-note{ margin:0 0 10px; font-size:0.75rem; color:var(--muted); }
+  .chip-row{ display:flex; flex-wrap:wrap; align-items:flex-end; gap:6px; margin-bottom:8px; }
+  .slot{ display:flex; flex-direction:column; min-width:74px; }
+  .slot-label{
+    font-size:0.55rem; font-weight:800; text-transform:uppercase; letter-spacing:0.03em;
+    text-align:center; margin-bottom:2px; color:#444;
+  }
+  .slot-box{
+    border-radius:6px; padding:5px 4px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; min-height:56px;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .slot-box img.icon{ height:18px; width:auto; margin-bottom:2px; }
+  .slot-box .word{ font-weight:700; font-size:0.78rem; text-align:center; color:#fff; }
+  .aux-box{ background:var(--doing); }
+  .aux-diamond{
+    width:100%; min-height:46px; background:#fff; border:2px solid #222;
+    clip-path:polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .aux-diamond .word{ color:#222; font-size:0.78rem; }
+  .comma-mark{ position:relative; width:12px; height:20px; align-self:flex-end; margin:0 0 4px; flex-shrink:0; }
+  .comma-mark::before{ content:''; position:absolute; top:0; left:0; width:12px; height:12px; border-radius:50%; background:#222; }
+  .comma-mark::after{ content:''; position:absolute; top:7px; left:2px; width:7px; height:11px; background:#222; border-radius:0 60% 60% 60%; transform:rotate(12deg); }
+  .fullstop-mark{ width:12px; height:12px; border-radius:50%; background:#222; align-self:flex-end; margin:0 0 4px; flex-shrink:0; }
+  .lit-badge{ background:var(--lit-bg); color:#333; border-radius:6px; padding:6px 10px; font-weight:700; font-size:0.78rem; min-height:56px; display:flex; align-items:center; justify-content:center; }
+  .written-ex{ font-size:0.82rem; color:#1c3d22; background:#f1f6f2; border:1px dashed #9bbf9f; border-radius:6px; padding:6px 10px; }
+  .written-ex div{ margin:1px 0; }
+
+  /* ---------- Glossary ---------- */
+  .glossary dt{ font-weight:700; color:var(--dark); margin-top:12px; font-size:0.92rem; }
+  .glossary dd{ margin:2px 0 0; font-size:0.85rem; color:#333; line-height:1.5; }
+
+  .note-box{
+    background:#eaf6fd; border-left:4px solid var(--brand); border-radius:6px;
+    padding:10px 14px; font-size:0.82rem; color:#0a3a52; margin-top:16px; line-height:1.5;
+  }
+
+  .print-controls{
+    max-width:210mm; margin:10px auto; text-align:center;
+  }
+  .print-controls button{
+    background:var(--brand); color:#fff; border:none; border-radius:8px;
+    padding:10px 22px; font-size:0.95rem; font-weight:700; cursor:pointer;
+  }
+
+  @media print{
+    body{ background:#fff; }
+    .page{ box-shadow:none; margin:0; width:auto; }
+    .print-controls{ display:none; }
+    @page{ size:A4; margin:14mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+</div>
+
+<!-- COVER -->
+<div class="page cover">
+  <img class="logo" src="https://wallscourtfarmacademy.clf.uk/wp-content/uploads/Wallscourt%20Farm%20logo%20cmyk%20big.jpg" alt="Wallscourt Farm Academy">
+  <div class="rainbow">
+    <div style="background:#c0392b;--rot:-18deg"></div>
+    <div style="background:var(--who);--rot:-10deg"></div>
+    <div style="background:var(--doing);--rot:-2deg"></div>
+    <div style="background:var(--what);--rot:6deg"></div>
+    <div style="background:var(--where);--rot:14deg"></div>
+    <div style="background:var(--describe);--rot:22deg"></div>
+  </div>
+  <h1>Colour-Coded Sentence Progression</h1>
+  <h2>A Teacher's Reference Guide — Year 1 to Year 6</h2>
+  <div class="credit">Wallscourt Farm Academy edition. The colour-coded sentence-progression framework and its Year 1–6 structure sequence are the work of <strong>Jacobs Education</strong> (Primary English Consultancy). This guide restates that framework in a cleaner, typeset layout for staff reference, alongside <a style="color:#bcd8e8" href="#">the school's companion interactive tool</a>.</div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="page">
+  <div class="page-header"><h1>Overview</h1><div class="tag">Reference Guide</div></div>
+  <p class="lede">
+    This guide sets out a colour-coded approach to teaching sentence construction across Years 1–6, following the sentence-type progression set by the National Curriculum. Each part of a sentence — its subject, its verb, its object, and so on — is given a consistent colour and symbol, so that the same visual language carries through every year group, only growing more complex as pupils do.
+  </p>
+  <p class="lede">
+    The parts of a sentence used throughout this guide are: <strong>who</strong> (the subject — who or what the sentence is about), <strong>doing</strong> (the verb), <strong>what</strong> (the object), <strong>where</strong>, <strong>when</strong>, <strong>how</strong> (an adverb), <strong>describe</strong> (an adjective), an unlabelled diamond for <strong>auxiliary and modal verbs</strong> (is/was/has/might…, where the verb isn't itself the action), and three connecting parts: <strong>co-ordinating</strong> and <strong>subordinating conjunctions</strong>, and <strong>relative clauses</strong>.
+  </p>
+  <div class="note-box">
+    <strong>A note on "who":</strong> the subject of a sentence isn't always a person — "the ball" is the subject of "The ball deflates." From Year 3 onwards, this guide labels the block <strong>who (subject)</strong> to make that explicit as pupils' grammatical vocabulary develops; Years 1–2 keep the simpler term "who" to match the concrete, person-icon-friendly language young children need.
+  </div>
+  <div class="note-box">
+    This guide can be used flexibly: follow a class's own year-group table for whole-class teaching, or drop down to an earlier year's table to scaffold a pupil working below age-related expectations, or up to stretch one working ahead.
+  </div>
+</div>
+
+<!-- COLOUR KEY -->
+<div class="page">
+  <div class="page-header"><h1>Colour Key</h1><div class="tag">Reference Guide</div></div>
+  <p class="lede">Every block in this guide uses one of the following eleven colours and symbols, consistently across all six years.</p>
+  <div class="key-grid" id="keyGrid"></div>
+</div>
+
+<div id="yearPages"></div>
+
+<!-- GLOSSARY -->
+<div class="page">
+  <div class="page-header"><h1>Glossary</h1><div class="tag">Reference Guide</div></div>
+  <p class="lede">Grammatical terms used throughout this guide.</p>
+  <dl class="glossary" id="glossaryList"></dl>
+  <div class="note-box">This is not necessarily an exhaustive glossary of every term Jacobs Education's original document defines — it covers the terms most relevant to the structures in this guide. Ask if a term you need is missing.</div>
+</div>
+
+<script>
+const TYPE = {
+  who:      {label:'who',            bg:'var(--who)',      iconSrc:'icons/who.png'},
+  doing:    {label:'doing',          bg:'var(--doing)',    iconSrc:'icons/doing.png'},
+  what:     {label:'what',           bg:'var(--what)',     iconSrc:'icons/what.png'},
+  where:    {label:'where',          bg:'var(--where)',    iconSrc:'icons/where.png'},
+  when:     {label:'when',           bg:'var(--when)',     iconSrc:'icons/when.png'},
+  how:      {label:'how',            bg:'var(--how)',      iconSrc:'icons/how.png'},
+  describe: {label:'describe',       bg:'var(--describe)', iconSrc:'icons/describe.png'},
+  aux:      {label:'',               bg:'var(--doing)', diamond:true},
+  coord:    {label:'co-ordinating',  bg:'#fff', border:'2px solid var(--coord)', iconSrc:'icons/coord.png'},
+  subord:   {label:'subordinating',  bg:'#fff', border:'2px solid var(--subord)', iconSrc:'icons/subord.png'},
+  relative: {label:'relative clause',bg:'var(--relative-bg)', border:'2px solid var(--relative-border)', iconSrc:'icons/relative.png'},
+  lit:      {label:'',               bg:'var(--lit-bg)'}
+};
+function whoLabel(yearId){ return (yearId==='y1'||yearId==='y2') ? 'who' : 'who (subject)'; }
+function labelFor(type, yearId){
+  if(type==='who') return whoLabel(yearId);
+  if(type==='aux') return '';
+  return TYPE[type].label;
+}
+
+function s(type, def, extra){ return Object.assign({type, default:def}, extra||{}); }
+function comma(){ return {type:'comma'}; }
+function lit(text){ return {type:'lit', text}; }
+
+const YEARS = [
+{
+  id:'y1', label:'Year 1',
+  intro:"Year 1 pupils build a solid foundation in sentence construction: simple sentences with a subject (who) and a verb (doing), and joining words or clauses with 'and'.",
+  structures:[
+    { title:"Simple sentence", note:"who + doing",
+      pattern:[ s('who','The child'), s('doing','eats') ],
+      examples:["The child eats.","The child ate."] },
+    { title:"Simple sentence", note:"who + doing + what",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly') ],
+      examples:["The child eats a lolly.","The child ate a lolly."] },
+    { title:"Simple sentence", note:"who + linking verb (is/was) + describe",
+      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('describe','happy') ],
+      examples:["The child is happy.","The child was happy."] },
+    { title:"Simple sentence using 'and'", note:"who + doing + and + doing",
+      pattern:[ s('who','The child'), s('doing','eats'), lit('and'), s('doing','plays') ],
+      examples:["The child eats and plays.","The child ate and played."] },
+    { title:"Simple sentence using 'and'", note:"who + doing + what + and + what",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), lit('and'), s('what','the fruit') ],
+      examples:["The child eats the lolly and the fruit.","The child ate the lolly and the fruit."] },
+    { title:"Simple sentence using 'and'", note:"who + linking verb + describe + and + describe",
+      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('describe','happy'), lit('and'), s('describe','excited') ],
+      examples:["The child is happy and excited.","The child was happy and excited."] },
+    { title:"Compound sentence using 'and'", note:"Joining two main clauses: who + doing + and + who + doing",
+      pattern:[ s('who','The child'), s('doing','plays'), lit('and'), s('who','the adult'), s('doing','talks') ],
+      examples:["The child plays and the adult talks.","The child played and the adult talked."] },
+    { title:"Compound sentence using 'and'", note:"Vary the structure, e.g. who + doing + what + and + who + doing",
+      pattern:[ s('who','The child'), s('doing','kicks'), s('what','the ball'), lit('and'), s('who','the adult'), s('doing','watches') ],
+      examples:["The child kicks the ball and the adult watches.","The child kicked the ball and the adult watched."] }
+  ]
+},
+{
+  id:'y2', label:'Year 2',
+  intro:"Year 2 pupils expand sentences with adjectives and adverbs of manner ('how'), meet a wider range of co-ordinating conjunctions (but, so, or), start complex sentences with 'because', and use the progressive verb form.",
+  structures:[
+    { title:"Recap compound sentence", note:"Co-ordinating conjunctions: and → but → so → or",
+      pattern:[ s('who','The child'), s('doing','cries'), s('coord','so',{options:['so','but','or','and']}), s('who','the adult'), s('doing','helps'), s('what','them') ],
+      examples:["The child cries so the adult helps them.","The child cried so the adult helped them."] },
+    { title:"Simple sentence with expanded noun phrase", note:"who + doing + describe + what (add commas for lists of adjectives when ready)",
+      pattern:[ s('who','The child'), s('doing','eats'), s('describe','delicious'), s('what','the lolly') ],
+      examples:["The child eats the delicious lolly.","The child ate the delicious lolly."] },
+    { title:"Simple sentence", note:"who + doing + how",
+      pattern:[ s('who','The child'), s('doing','eats'), s('how','quickly') ],
+      examples:["The child eats quickly.","The child ate quickly."] },
+    { title:"Simple sentence", note:"who + doing + what + how",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('how','quickly') ],
+      examples:["The child eats the lolly quickly.","The child ate the lolly quickly."] },
+    { title:"Complex sentence using 'because'", note:"Subordinating conjunctions: because → when → if → that",
+      pattern:[ s('who','The child'), s('doing','runs'), s('subord','because',{options:['because','when','if','that']}), s('who','they'), s('doing','want'), s('what','the ball') ],
+      examples:["The child runs because they want the ball.","The child ran because they wanted the ball."] },
+    { title:"Simple progressive sentence", note:"who + is/was (auxiliary) + doing (-ing form)",
+      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('doing','eating') ],
+      examples:["The child is eating.","The child was eating."] }
+  ]
+},
+{
+  id:'y3', label:'Year 3',
+  intro:"Year 3 pupils recap and extend co-ordinating and subordinating conjunctions (yet, as, while, until, since), add 'where' and 'when' to simple sentences, and meet the present perfect verb form (has/have + past tense).",
+  structures:[
+    { title:"Recap compound sentence", note:"Co-ordinating conjunctions and/but/so/or → introduce 'yet'",
+      pattern:[ s('who','The child'), s('doing','kicks'), s('what','the ball'), s('coord','so',{options:['so','yet','and','but','or']}), s('who','the ball'), s('doing','deflates') ],
+      examples:["The child kicks the ball so the ball deflates.","The child kicked the ball so the ball deflated."] },
+    { title:"Recap complex sentence", note:"Subordinating conjunction 'because' → introduce as/while/until/since",
+      pattern:[ s('who','The child'), s('doing','eats'), s('subord','while',{options:['while','as','until','since','because']}), s('who','the adult'), s('doing','reads'), s('what','a book') ],
+      examples:["The child eats while the adult reads a book.","The child ate while the adult read a book."] },
+    { title:"Simple sentence", note:"who + doing + where",
+      pattern:[ s('who','The child'), s('doing','eats'), s('where','at the table') ],
+      examples:["The child eats at the table.","The child ate at the table."] },
+    { title:"Simple sentence", note:"who + doing + what + where",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly'), s('where','at the table') ],
+      examples:["The child eats a lolly at the table.","The child ate a lolly at the table."] },
+    { title:"Simple sentence", note:"who + doing + when",
+      pattern:[ s('who','The child'), s('doing','eats'), s('when','before school') ],
+      examples:["The child eats before school.","The child ate before school."] },
+    { title:"Simple sentence", note:"who + doing + what + when",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','a lolly'), s('when','before school') ],
+      examples:["The child eats a lolly before school.","The child ate a lolly before school."] },
+    { title:"Simple present perfect sentence", note:"who + has/have (auxiliary) + doing (past participle)",
+      pattern:[ s('who','The child'), s('aux','has',{options:['has','have']}), s('doing','eaten') ],
+      examples:["The child has eaten.","The children have eaten."] }
+  ]
+},
+{
+  id:'y4', label:'Year 4',
+  intro:"Year 4 pupils recap complex sentences and add although/before/after, explore fronted adverbial phrases, move the subordinate clause to the start of a sentence, and expand noun phrases with extra nouns and prepositional phrases.",
+  structures:[
+    { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2/Y3 → introduce although/before/after",
+      pattern:[ s('who','The child'), s('doing','eats'), s('subord','before',{options:['before','after','although']}), s('who','the adult'), s('doing','serves'), s('what','dinner') ],
+      examples:["The child eats before the adult serves dinner.","The child ate before the adult served dinner."] },
+    { title:"Simple sentence with a fronted adverbial phrase", note:"how / where / when + comma + who + doing + what",
+      pattern:[ s('when','Before dinner'), comma(), s('who','the child'), s('doing','eats'), s('what','a lolly') ],
+      examples:["Before dinner, the child eats a lolly.","Before dinner, the child ate a lolly."] },
+    { title:"Complex sentence", note:"Moving the subordinate clause to the beginning of the sentence",
+      pattern:[ s('subord','As',{options:['As','Before','After','Although']}), s('who','the child'), s('doing','eats'), s('what','the lolly'), comma(), s('who','the adult'), s('doing','pays') ],
+      examples:["As the child eats the lolly, the adult pays.","As the child ate the lolly, the adult paid."] },
+    { title:"Simple sentence with noun phrase expanded by additional nouns", note:"who + doing + what + what",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','an ice'), s('what','lolly') ],
+      examples:["The child eats an ice lolly.","The child ate an ice lolly."] },
+    { title:"Simple sentence with noun phrase expanded by a prepositional phrase", note:"who + doing + what + where",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('where','from the shop') ],
+      examples:["The child eats the lolly from the shop.","The child ate the lolly from the shop."] }
+  ]
+},
+{
+  id:'y5', label:'Year 5',
+  intro:"Year 5 pupils widen their conjunction range further (for, unless, whenever, whereas), use adverbs of possibility, build modal-verb sentences, and learn to embed subordinate and relative clauses within a sentence — not just at the start or end.",
+  structures:[
+    { title:"Recap compound sentence", note:"Co-ordinating conjunctions from previous years → introduce 'for'",
+      pattern:[ s('who','The child'), s('doing','eats'), s('coord','for',{options:['for','and','but','so','or','yet']}), s('who','they'), s('aux','are',{options:['are','is']}), s('describe','hungry') ],
+      examples:["The child eats for they are hungry.","The child ate for they were hungry."] },
+    { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2-Y4 → introduce unless/whenever/whereas",
+      pattern:[ s('who','The child'), s('doing','laughs'), s('subord','whenever',{options:['whenever','unless','whereas']}), s('who','they'), s('doing','hear'), s('what','a joke') ],
+      examples:["The child laughs whenever they hear a joke.","The child laughed whenever they heard a joke."] },
+    { title:"Simple sentence with an adverb for possibility", note:"who + linking verb + adverb + describe",
+      pattern:[ s('who','The child'), s('aux','is',{options:['is','was']}), s('how','completely'), s('describe','overwhelmed') ],
+      examples:["The child is completely overwhelmed.","The child was completely overwhelmed."] },
+    { title:"Simple modal sentence", note:"who + modal verb + doing (+ what)",
+      pattern:[ s('who','The child'), s('aux','might',{options:['might','can','could','may','must','shall','should','will','would']}), s('doing','play'), s('what','football') ],
+      examples:["The child might play football.","The child might play."] },
+    { title:"Complex sentence", note:"Embed the subordinate clause within a sentence",
+      pattern:[ s('who','The child'), comma(), s('subord','as',{options:['as']}), s('who','the adult'), s('doing','tells'), s('what','a joke'), comma(), s('doing','laughs') ],
+      examples:["The child, as the adult tells a joke, laughs.","The child, as the adult told a joke, laughed."] },
+    { title:"Complex sentence", note:"Embed a relative clause within a sentence",
+      pattern:[ s('who','The child'), comma(), s('relative','who is feeling very content'), comma(), s('doing','eats'), s('what','their lolly') ],
+      examples:["The child, who is feeling very content, eats their lolly.","The child, who was feeling very content, ate their lolly."] },
+    { title:"Complex sentence", note:"Include a relative clause at the end of the sentence",
+      pattern:[ s('who','The child'), s('doing','eats'), s('what','the lolly'), s('relative','that they won in a competition') ],
+      examples:["The child eats the lolly that they won in a competition.","The child ate the lolly that they won in a competition."] }
+  ]
+},
+{
+  id:'y6', label:'Year 6',
+  intro:"Year 6 pupils consolidate and refine advanced sentence structures: a final widening of subordinating conjunctions (in order to, provided that, supposing), and the passive voice, where the subject becomes the recipient of the action rather than the one doing it.",
+  structures:[
+    { title:"Recap complex sentence", note:"Subordinating conjunctions from Y2-Y5 → introduce in order to/provided that/supposing",
+      pattern:[ s('who','The child'), s('doing','smiles'), s('subord','provided that',{options:['provided that','in order to','supposing']}), s('who','the adult'), s('doing','buys'), s('what','the lolly') ],
+      examples:["The child smiles provided that the adult buys the lolly.","The child smiled provided that the adult bought the lolly."] },
+    { title:"Simple passive sentence", note:"The object of the active sentence becomes the subject: what (as agent) + is/was + doing (past participle) + by + who",
+      pattern:[ s('what','The lolly'), s('aux','is',{options:['is','was']}), s('doing','eaten'), lit('by'), s('who','the child') ],
+      examples:["The lolly is eaten by the child.","The lolly was eaten by the child."] }
+  ]
+}
+];
+
+/* ---------- Colour key render ---------- */
+const KEY_ORDER = ['who','doing','what','where','when','how','describe','aux','coord','subord','relative'];
+const KEY_LABELS = {who:'who (subject)', aux:'is / was / has / might…', coord:'co-ordinating conjunction', subord:'subordinating conjunction', relative:'relative clause', what:'what (object)'};
+const keyGrid = document.getElementById('keyGrid');
+KEY_ORDER.forEach(t=>{
+  const def = TYPE[t];
+  const item = document.createElement('div');
+  item.className = 'key-item';
+  const sw = document.createElement('div');
+  sw.className = 'key-swatch';
+  sw.style.background = def.bg.startsWith('var')? def.bg : def.bg;
+  if(def.border) sw.style.border = def.border;
+  if(t==='aux'){
+    sw.innerHTML = '<div style="width:26px;height:26px;background:#fff;border:2px solid #222;clip-path:polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);"></div>';
+  } else if(def.iconSrc){
+    sw.innerHTML = `<img src="${def.iconSrc}">`;
+  }
+  item.appendChild(sw);
+  const text = document.createElement('div');
+  text.className = 'key-text';
+  text.innerHTML = `<b>${KEY_LABELS[t]||def.label}</b>`;
+  item.appendChild(text);
+  keyGrid.appendChild(item);
+});
+
+/* ---------- Structure card render (static, model example only) ---------- */
+function renderCard(structure, yearId){
+  const card = document.createElement('div');
+  card.className = 'structure-card';
+  const h4 = document.createElement('h4'); h4.textContent = structure.title; card.appendChild(h4);
+  const note = document.createElement('p'); note.className='structure-note'; note.textContent = structure.note; card.appendChild(note);
+
+  const row = document.createElement('div'); row.className = 'chip-row';
+  structure.pattern.forEach(tok=>{
+    if(tok.type==='comma'){ const c=document.createElement('div'); c.className='comma-mark'; row.appendChild(c); return; }
+    if(tok.type==='lit'){
+      const w = document.createElement('div'); w.className='slot';
+      const sp = document.createElement('div'); sp.className='slot-label'; sp.innerHTML='&nbsp;'; w.appendChild(sp);
+      const b = document.createElement('div'); b.className='lit-badge'; b.textContent = tok.text; w.appendChild(b);
+      row.appendChild(w); return;
+    }
+    const def = TYPE[tok.type];
+    const wrap = document.createElement('div'); wrap.className = 'slot';
+    const label = document.createElement('div'); label.className = 'slot-label';
+    label.textContent = labelFor(tok.type, yearId);
+    wrap.appendChild(label);
+    const box = document.createElement('div'); box.className = 'slot-box' + (def.diamond?' aux-box':'');
+    box.style.background = def.bg;
+    if(def.border) box.style.border = def.border;
+    if(def.diamond){
+      const dia = document.createElement('div'); dia.className='aux-diamond';
+      const word = document.createElement('div'); word.className='word'; word.textContent = tok.default;
+      dia.appendChild(word); box.appendChild(dia);
+    } else {
+      if(def.iconSrc){ const img=document.createElement('img'); img.className='icon'; img.src=def.iconSrc; box.appendChild(img); }
+      const word = document.createElement('div'); word.className='word'; word.textContent = tok.default;
+      box.appendChild(word);
+    }
+    wrap.appendChild(box);
+    row.appendChild(wrap);
+  });
+  const fs = document.createElement('div'); fs.className='fullstop-mark'; row.appendChild(fs);
+  card.appendChild(row);
+
+  const ex = document.createElement('div'); ex.className='written-ex';
+  structure.examples.forEach(t=>{ const d=document.createElement('div'); d.textContent=t; ex.appendChild(d); });
+  card.appendChild(ex);
+  return card;
+}
+
+const yearPagesEl = document.getElementById('yearPages');
+YEARS.forEach(y=>{
+  const page = document.createElement('div');
+  page.className = 'page';
+  const header = document.createElement('div'); header.className='page-header';
+  header.innerHTML = `<h1>${y.label}</h1><div class="tag">Reference Guide</div>`;
+  page.appendChild(header);
+  const band = document.createElement('div'); band.className='year-band';
+  band.innerHTML = `<h1>${y.label}</h1><p>${y.intro}</p>`;
+  page.appendChild(band);
+  y.structures.forEach(structure=> page.appendChild(renderCard(structure, y.id)));
+  yearPagesEl.appendChild(page);
+});
+
+/* ---------- Glossary content ---------- */
+const GLOSSARY = [
+  ["Sentence","A complete idea that usually contains a subject and a verb. In writing, a sentence begins with a capital letter and ends with a full stop, question mark, or exclamation mark."],
+  ["Simple Sentence","A sentence containing only one main clause, e.g. 'The child eats the lolly.'"],
+  ["Compound Sentence","A sentence containing two or more main clauses joined by a co-ordinating conjunction, e.g. 'and', 'but', 'so'."],
+  ["Main Clause","An independent clause that can stand alone as a complete sentence, e.g. 'The child eats the lolly.'"],
+  ["Subordinate Clause","A clause that depends on a main clause and cannot stand alone, often introduced by a subordinating conjunction such as 'when' or 'because', e.g. 'because the child was hungry'."],
+  ["Subordinating Conjunction","A word or phrase that introduces a subordinate clause and links it to the main clause, e.g. 'because', 'although', 'unless'."],
+  ["Relative Clause","A type of subordinate clause introduced by a relative pronoun (who, which, that) that gives more information about a noun, e.g. 'The child, who was smiling, ate a lolly.'"],
+  ["Verb","A word that describes an action, state, or occurrence, e.g. 'run', 'is', 'explains'."],
+  ["Modal Verb","A type of auxiliary verb that expresses possibility, ability, permission, necessity, or obligation — e.g. can, could, might, must."],
+  ["Progressive Verb Form","A verb form describing an ongoing or in-progress action, formed with 'to be' + the -ing form of the main verb, e.g. 'is eating'."],
+  ["Present Perfect Verb Form","A verb form describing a completed action linked to another time, formed with 'to have' + the past participle of the main verb, e.g. 'has eaten'."],
+  ["Passive Voice","A sentence structure where the subject receives the action rather than performing it, e.g. 'The lolly was eaten by the child.'"],
+  ["Noun Phrase","A phrase built around a noun and any modifiers, such as adjectives or determiners, e.g. 'the big, red ball'."],
+  ["Fronted Adverbial","A word or phrase placed at the start of a sentence to describe the action that follows, e.g. 'Before dinner, the child ate a lolly.'"],
+  ["Preposition","A word showing the relationship between a noun (or pronoun) and other words in a sentence — often direction, location, time, or manner."],
+  ["Prepositional Phrase","A phrase that begins with a preposition and modifies a noun or verb, e.g. 'on the table', 'under the bench'."]
+];
+const glossaryEl = document.getElementById('glossaryList');
+GLOSSARY.forEach(([term, def])=>{
+  const dt = document.createElement('dt'); dt.textContent = term;
+  const dd = document.createElement('dd'); dd.textContent = def;
+  glossaryEl.appendChild(dt); glossaryEl.appendChild(dd);
+});
+</script>
+</body>
+</html>

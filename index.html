@@ -313,8 +313,8 @@
     padding:8px 12px;
     font-weight:700;
     font-size:0.95rem;
-    height:36px;
-    margin-top:16px;
+    min-height:70px;
+    flex:1;
   }
 
   .preview{
@@ -634,7 +634,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26c
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26d
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -702,9 +702,21 @@ const HEX_TEXT = {
 const HEX_BORDER = { coord:'C0392B', subord:'2E5FA3', relative:'7A7A8C' };
 
 /* Category list used by the free-write colour picker (order matters for the dropdown) */
-const CATEGORY_ORDER = ['who','doing','what','where','when','how','describe','aux','coord','subord','relative'];
-function categoryDisplayName(t){
+const CATEGORY_ORDER = ['who','doing','what','where','when','how','describe','aux','coord','subord','relative','lit'];
+/* Auxiliary/modal word choices offered in the aux diamond's dropdown, in both the
+   structured builder and the free-write tool. */
+const AUX_OPTIONS = ['is','was','are','were','has','have','might','can','could','may','must','shall','should','will','would'];
+function categoryDisplayName(t, yearId){
   if(t==='aux') return 'is / was / has / might…';
+  if(t==='lit') return 'plain (not coloured)';
+  if(t==='who'){
+    // "who" is really the grammatical subject, which isn't always a person (e.g. "the ball
+    // deflates"). Year 1-2 keep the simple, concrete term matching the source document;
+    // Year 3 upward (and general contexts like free-write, with no single year in play)
+    // introduce the formal term alongside it.
+    if(yearId==='y1' || yearId==='y2') return 'who';
+    return 'who (subject)';
+  }
   return TYPE[t].label;
 }
 
@@ -1167,7 +1179,7 @@ function openPresentMode(items, title){
 }
 
 /* ---------- Sentence assembly ---------- */
-function buildCard(structure, sIdx){
+function buildCard(structure, sIdx, yearId){
   const card = document.createElement('div');
   card.className = 'structure-card';
 
@@ -1193,10 +1205,17 @@ function buildCard(structure, sIdx){
       return;
     }
     if(tok.type === 'lit'){
+      const litWrap = document.createElement('div');
+      litWrap.className = 'slot';
+      const spacer = document.createElement('div');
+      spacer.className = 'slot-label';
+      spacer.innerHTML = '&nbsp;';
+      litWrap.appendChild(spacer);
       const b = document.createElement('div');
       b.className = 'lit-badge';
       b.textContent = tok.text;
-      row.appendChild(b);
+      litWrap.appendChild(b);
+      row.appendChild(litWrap);
       return;
     }
 
@@ -1209,7 +1228,7 @@ function buildCard(structure, sIdx){
 
     const label = document.createElement('div');
     label.className = 'slot-label';
-    label.textContent = def.label || '';
+    label.textContent = (tok.type==='who' ? categoryDisplayName('who', yearId) : def.label) || '';
     wrap.appendChild(label);
 
     const box = document.createElement('div');
@@ -1405,6 +1424,7 @@ function autoTagSentence(str){
   const TIME_HINT = new Set(['before','after','since','while','until','when']);
   const AUX = new Set(['is','was','are','were','am','has','have','had','be','been','being','do','does','did','might','can','could','may','must','shall','should','will','would']);
   const PREP_WHERE = new Set(['at','in','on','under','over','near','beside','behind','above','below','inside','outside','between','among','through','across','around','from','into','onto','towards','by']);
+  const PREP_OTHER = new Set(['with','without','of','about','like','than','except','despite','via','per']);
   const ADV_EXTRA = new Set(['perhaps','maybe','surely','completely','probably','certainly','definitely','possibly','obviously','clearly','actually','really','totally','absolutely','quite','rather','extremely','very','soon','then','now','today','yesterday','tomorrow','later','finally','suddenly','immediately','afterwards','meanwhile','already','still','again','often','always','never','sometimes']);
   const ADV_EXCEPT = new Set(['family','families','only','early','friendly','lonely','lovely','silly','ugly','holy','lolly','lollies','jelly','jellies','belly','bellies','trolley','trolleys','dolly','dollies','rally','rallies','bully','bullies','gully','gullies','filly','fillies','ally','allies','butterfly','butterflies','dragonfly','dragonflies']);
   const ADJ = new Set(['happy','sad','excited','delicious','sweet','big','small','round','bright','tall','short','quick','slow','loud','quiet','gentle','careful','sudden','immediate','eager','nervous','calm','content','overwhelmed','hungry','tired','brave','kind','cruel','colourful','delightful','wonderful','amazing','terrible','huge','tiny','ancient','modern','shiny','dull','soft','hard','warm','cold','hot','fresh','old','young','beautiful','ugly','strange','curious','mysterious','clever','silly','funny','serious','proud','shy','angry','worried','confused','surprised','delighted','grumpy','cheerful','friendly','lonely','lovely','pretty','handsome','messy','tidy','neat','dirty','clean','heavy','light','strong','weak','rich','poor','busy','lazy','wild','tame','wise','foolish','honest','polite','rude','patient','impatient','ice',
@@ -1503,11 +1523,29 @@ function autoTagSentence(str){
       i++; continue;
     }
 
+    // Passive voice ("The lolly is eaten by the child"): "by" here introduces the agent —
+    // who actually did the action — not a location, so it stays plain and the phrase after
+    // it is tagged as who/subject rather than where.
+    if(lw==='by' && items.length>=2 && items[items.length-1].cat==='doing' && items[items.length-2].cat==='aux'){
+      items.push({text:w, cat:'lit'});
+      clauseHasSubject = false; vState = 'none';
+      i++; continue;
+    }
+
     if(PREP_WHERE.has(lw)){
       let k=i; const chunk=[];
       while(k<n && !/^[,.!?;]$/.test(raw[k]) && !(k>i && isBoundaryWord(lower(raw[k])))){ chunk.push(raw[k]); k++; }
       items.push({text: chunk.join(' '), cat:'where'});
       i=k; continue;
+    }
+
+    if(PREP_OTHER.has(lw)){
+      // A preposition that isn't clearly spatial (where) or temporal (when) — e.g. "with",
+      // "of" — doesn't fit any of this tool's categories cleanly, so it's left as a plain,
+      // uncoloured word rather than forced into "what". The noun phrase after it is still
+      // tagged normally by the rules below.
+      items.push({text:w, cat:'lit'});
+      i++; continue;
     }
 
     if(TITLES.has(lw)){
@@ -1542,6 +1580,12 @@ function autoTagSentence(str){
       let hasNoun = k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]));
       let nounWord = hasNoun ? raw[k] : null;
       if(hasNoun) k++;
+      // A possessive ("the cat's") isn't complete on its own — it needs the noun it
+      // possesses, so keep that as part of the same block: "the cat's ball", not two blocks.
+      if(hasNoun && /'s$|s'$/.test(nounWord) && k<n && !/^[,.!?;]$/.test(raw[k]) && !isBoundaryWord(lower(raw[k])) && !AUX.has(lower(raw[k]))){
+        nounWord += ' ' + raw[k];
+        k++;
+      }
       // Safety net: a determiner-led noun phrase must end in a noun. If adjective-gathering
       // ran out without finding one (e.g. compromise mistags an ambiguous word like "adult"
       // as an Adjective), the last word gathered was actually the noun, not a describer.
@@ -1675,17 +1719,34 @@ function renderFreeWriteChips(container, items){
     const content = def.diamond ? document.createElement('div') : box;
     if(def.diamond) content.className = 'aux-diamond';
 
-    const icoEl = makeIconEl(def, item.cat);
-    if(icoEl){
-      const ico = document.createElement('div');
-      ico.className = 'word-ico';
-      ico.appendChild(icoEl);
-      content.appendChild(ico);
+    if(def.diamond){
+      const auxSel = document.createElement('select');
+      const dtLower = displayText.toLowerCase();
+      const auxOptions = AUX_OPTIONS.some(o=>o.toLowerCase()===dtLower) ? AUX_OPTIONS : [displayText, ...AUX_OPTIONS];
+      auxOptions.forEach(opt=>{
+        const o = document.createElement('option');
+        o.value = opt; o.textContent = opt;
+        if(opt.toLowerCase()===displayText.toLowerCase()) o.selected = true;
+        auxSel.appendChild(o);
+      });
+      auxSel.addEventListener('change', ()=>{
+        items[idx].text = auxSel.value + (hasComma ? ',' : '');
+        renderFreeWriteChips(container, items);
+      });
+      content.appendChild(auxSel);
+    } else {
+      const icoEl = makeIconEl(def, item.cat);
+      if(icoEl){
+        const ico = document.createElement('div');
+        ico.className = 'word-ico';
+        ico.appendChild(icoEl);
+        content.appendChild(ico);
+      }
+      const txt = document.createElement('div');
+      txt.className = 'word-text';
+      txt.textContent = displayText;
+      content.appendChild(txt);
     }
-    const txt = document.createElement('div');
-    txt.className = 'word-text';
-    txt.textContent = displayText;
-    content.appendChild(txt);
     if(def.diamond) box.appendChild(content);
 
     wrap.appendChild(box);
@@ -1807,7 +1868,7 @@ function selectYear(id){
   content.appendChild(introEl);
 
   y.structures.forEach((structure, i)=>{
-    content.appendChild(buildCard(structure, i));
+    content.appendChild(buildCard(structure, i, y.id));
   });
 
   window.scrollTo({top:0, behavior:'smooth'});

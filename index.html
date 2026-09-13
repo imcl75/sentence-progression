@@ -450,6 +450,29 @@
     font-style:italic;
   }
 
+  .bank-list{ display:flex; flex-direction:column; gap:10px; }
+  .bank-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    background:#f7f9fa;
+    border:1px solid #dfe6ea;
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .bank-item-preview{ display:flex; flex-wrap:wrap; gap:5px; flex:1; min-width:200px; }
+  .bank-pill{
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:0.8rem;
+    font-weight:700;
+  }
+  .bank-item-actions{ display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0; }
+  .bank-item-actions .btn-small{ padding:5px 8px; }
+
   footer{
     text-align:center;
     font-size:0.72rem;
@@ -677,7 +700,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26f
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26g
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -819,6 +842,38 @@ function buildGrammarTermEl(cat){
   el.appendChild(tick);
   el.appendChild(text);
   return el;
+}
+
+/* ---------- Sentence bank: a persistent library of saved sentences ---------- */
+// Lets a teacher colour several sentences ahead of a lesson (from "My sentence") and save
+// each one, then present the whole set back to back in one continuous Present Mode session
+// instead of closing and reopening between each one. Kept in localStorage so it survives
+// reloads and is still there next lesson, next week.
+const SENTENCE_BANK_KEY = 'wfa_scp_sentenceBank';
+let sentenceBank = [];
+try {
+  const raw = localStorage.getItem(SENTENCE_BANK_KEY);
+  if(raw) sentenceBank = JSON.parse(raw).filter(e => e && Array.isArray(e.items) && e.items.length);
+} catch(e) { sentenceBank = []; }
+function saveSentenceBank(){
+  try { localStorage.setItem(SENTENCE_BANK_KEY, JSON.stringify(sentenceBank)); } catch(e) {}
+}
+function addToSentenceBank(items){
+  const clean = items.filter(it => it.text && it.text.trim());
+  if(!clean.length) return;
+  sentenceBank.push({ id: Date.now()+'-'+Math.random().toString(36).slice(2,7), items: clean });
+  saveSentenceBank();
+}
+function removeFromSentenceBank(id){
+  sentenceBank = sentenceBank.filter(e => e.id !== id);
+  saveSentenceBank();
+}
+function moveInSentenceBank(id, dir){
+  const i = sentenceBank.findIndex(e => e.id === id);
+  const j = i + dir;
+  if(i<0 || j<0 || j>=sentenceBank.length) return;
+  [sentenceBank[i], sentenceBank[j]] = [sentenceBank[j], sentenceBank[i]];
+  saveSentenceBank();
 }
 
 /* ---------- Helper to build a slot token ---------- */
@@ -1002,6 +1057,12 @@ freeTabBtn.textContent = '✏️ My sentence';
 freeTabBtn.dataset.id = 'free';
 freeTabBtn.addEventListener('click', ()=> selectFreeWrite());
 tabsEl.appendChild(freeTabBtn);
+const bankTabBtn = document.createElement('button');
+bankTabBtn.className = 'year-tab';
+bankTabBtn.textContent = '📚 My sentences';
+bankTabBtn.dataset.id = 'bank';
+bankTabBtn.addEventListener('click', ()=> selectBank());
+tabsEl.appendChild(bankTabBtn);
 
 /* ---------- Shared sentence assembly ---------- */
 function assembleSentenceText(items){
@@ -1150,11 +1211,23 @@ function slugify(str){
 }
 
 /* ---------- Present mode: full-screen, click/tap-to-reveal ---------- */
-const presentState = { items:[], revealed:0, keyHandler:null };
+const presentState = { playlist:[], index:0, cleanItems:[], revealed:0, keyHandler:null, fullstopEl:null };
 
+// Presents a single sentence — unchanged behaviour, now just a one-entry playlist.
 function openPresentMode(items, title){
-  const cleanItems = items.filter(it => it.text && it.text.trim());
-  if(!cleanItems.length){ alert('Nothing to present yet — build a sentence first.'); return; }
+  openPresentPlaylist([{ items, title }]);
+}
+
+// Presents one or more sentences back to back in one continuous full-screen session —
+// once a sentence is fully revealed, the next click loads straight into the next entry's
+// first block instead of requiring Present Mode to be closed and reopened. Used for both
+// the single-sentence case (entries.length===1, where the title/step text look exactly as
+// before) and the sentence bank's "Present all".
+function openPresentPlaylist(playlist){
+  const entries = playlist
+    .map(e => ({ items: e.items.filter(it => it.text && it.text.trim()), title: e.title }))
+    .filter(e => e.items.length);
+  if(!entries.length){ alert('Nothing to present yet — build a sentence first.'); return; }
 
   const overlay = document.getElementById('presentOverlay');
   const row = document.getElementById('presentRow');
@@ -1162,98 +1235,122 @@ function openPresentMode(items, title){
   const sentenceEl = document.getElementById('presentSentence');
   const stepEl = document.getElementById('presentStep');
 
-  titleEl.textContent = title || '';
-  row.innerHTML = '';
-  sentenceEl.classList.remove('visible');
-  sentenceEl.textContent = assembleSentenceText(cleanItems);
+  presentState.playlist = entries;
 
-  cleanItems.forEach(it=>{
-    const def = TYPE[it.cat] || TYPE.lit;
-    const hasComma = /,$/.test(it.text);
-    const displayText = hasComma ? it.text.slice(0, -1) : it.text;
-    // Every token gets a wrapper — this is what the reveal animation now targets — so the
-    // optional Subject/Verb/Object annotation can sit below the coloured chip/lit block
-    // (outside it) while still fading in and out together with it.
-    const token = document.createElement('div');
-    token.className = 'present-token';
-    if(it.cat === 'lit'){
-      const chip = document.createElement('div');
-      chip.className = 'present-lit';
-      chip.textContent = displayText;
-      token.appendChild(chip);
-      token.appendChild(buildGrammarTermEl('lit'));
-      row.appendChild(token);
-      return;
-    }
-    const chip = document.createElement('div');
-    chip.className = 'present-chip' + (def.diamond ? ' aux-box' : '');
-    chip.style.background = def.bg;
-    chip.style.color = def.fg;
-    if(def.border) chip.style.border = def.border;
+  function loadEntry(idx){
+    presentState.index = idx;
+    const entry = entries[idx];
+    presentState.cleanItems = entry.items;
+    presentState.revealed = 0;
 
-    if(def.diamond){
-      const diamond = document.createElement('div');
-      diamond.className = 'aux-diamond';
-      const word = document.createElement('div');
-      word.className = 'p-word';
-      word.textContent = displayText;
-      diamond.appendChild(word);
-      chip.appendChild(diamond);
-    } else {
-      const icoEl = makeIconEl(def, it.cat);
-      if(icoEl){
-        const ico = document.createElement('div');
-        ico.className = 'p-icon';
-        ico.appendChild(icoEl);
-        chip.appendChild(ico);
+    titleEl.textContent = entries.length > 1
+      ? `Sentence ${idx+1} of ${entries.length}` + (entry.title ? ` — ${entry.title}` : '')
+      : (entry.title || '');
+    row.innerHTML = '';
+    sentenceEl.classList.remove('visible');
+    sentenceEl.textContent = assembleSentenceText(entry.items);
+
+    entry.items.forEach(it=>{
+      const def = TYPE[it.cat] || TYPE.lit;
+      const hasComma = /,$/.test(it.text);
+      const displayText = hasComma ? it.text.slice(0, -1) : it.text;
+      // Every token gets a wrapper — this is what the reveal animation now targets — so the
+      // optional Subject/Verb/Object annotation can sit below the coloured chip/lit block
+      // (outside it) while still fading in and out together with it.
+      const token = document.createElement('div');
+      token.className = 'present-token';
+      if(it.cat === 'lit'){
+        const chip = document.createElement('div');
+        chip.className = 'present-lit';
+        chip.textContent = displayText;
+        token.appendChild(chip);
+        token.appendChild(buildGrammarTermEl('lit'));
+        row.appendChild(token);
+        return;
       }
-      const label = document.createElement('div');
-      label.className = 'p-label';
-      label.textContent = categoryDisplayName(it.cat) || '';
-      chip.appendChild(label);
-      const word = document.createElement('div');
-      word.className = 'p-word';
-      word.textContent = displayText;
-      chip.appendChild(word);
-    }
-    if(hasComma){
-      const comma = document.createElement('div');
-      comma.className = 'p-comma';
-      chip.appendChild(comma);
-    }
-    token.appendChild(chip);
-    token.appendChild(buildGrammarTermEl(it.cat));
-    row.appendChild(token);
-  });
+      const chip = document.createElement('div');
+      chip.className = 'present-chip' + (def.diamond ? ' aux-box' : '');
+      chip.style.background = def.bg;
+      chip.style.color = def.fg;
+      if(def.border) chip.style.border = def.border;
 
-  const presentFullstop = document.createElement('div');
-  presentFullstop.className = 'present-fullstop';
-  row.appendChild(presentFullstop);
+      if(def.diamond){
+        const diamond = document.createElement('div');
+        diamond.className = 'aux-diamond';
+        const word = document.createElement('div');
+        word.className = 'p-word';
+        word.textContent = displayText;
+        diamond.appendChild(word);
+        chip.appendChild(diamond);
+      } else {
+        const icoEl = makeIconEl(def, it.cat);
+        if(icoEl){
+          const ico = document.createElement('div');
+          ico.className = 'p-icon';
+          ico.appendChild(icoEl);
+          chip.appendChild(ico);
+        }
+        const label = document.createElement('div');
+        label.className = 'p-label';
+        label.textContent = categoryDisplayName(it.cat) || '';
+        chip.appendChild(label);
+        const word = document.createElement('div');
+        word.className = 'p-word';
+        word.textContent = displayText;
+        chip.appendChild(word);
+      }
+      if(hasComma){
+        const comma = document.createElement('div');
+        comma.className = 'p-comma';
+        chip.appendChild(comma);
+      }
+      token.appendChild(chip);
+      token.appendChild(buildGrammarTermEl(it.cat));
+      row.appendChild(token);
+    });
 
-  presentState.items = cleanItems;
-  presentState.revealed = 0;
+    const presentFullstop = document.createElement('div');
+    presentFullstop.className = 'present-fullstop';
+    row.appendChild(presentFullstop);
+    presentState.fullstopEl = presentFullstop;
+  }
 
   function render(){
     const chips = row.children;
     for(let i=0; i<chips.length-1; i++){
       chips[i].classList.toggle('visible', i < presentState.revealed);
     }
-    const showSentence = presentState.revealed > cleanItems.length;
+    const showSentence = presentState.revealed > presentState.cleanItems.length;
     sentenceEl.classList.toggle('visible', showSentence);
-    presentFullstop.classList.toggle('visible', showSentence);
-    const shown = Math.min(presentState.revealed, cleanItems.length);
-    stepEl.textContent = showSentence
-      ? `${cleanItems.length} / ${cleanItems.length} · sentence`
-      : `${shown} / ${cleanItems.length}`;
+    presentState.fullstopEl.classList.toggle('visible', showSentence);
+    const shown = Math.min(presentState.revealed, presentState.cleanItems.length);
+    const blockStep = showSentence
+      ? `${presentState.cleanItems.length} / ${presentState.cleanItems.length} · sentence`
+      : `${shown} / ${presentState.cleanItems.length}`;
+    stepEl.textContent = entries.length > 1
+      ? `Sentence ${presentState.index+1}/${entries.length} · ${blockStep}`
+      : blockStep;
   }
 
   function advance(){
-    presentState.revealed = Math.min(presentState.revealed+1, cleanItems.length+1);
-    render();
+    const maxRevealed = presentState.cleanItems.length + 1;
+    if(presentState.revealed < maxRevealed){
+      presentState.revealed++;
+      render();
+    } else if(presentState.index < entries.length - 1){
+      loadEntry(presentState.index + 1);
+      render();
+    }
   }
   function back(){
-    presentState.revealed = Math.max(presentState.revealed-1, 0);
-    render();
+    if(presentState.revealed > 0){
+      presentState.revealed--;
+      render();
+    } else if(presentState.index > 0){
+      loadEntry(presentState.index - 1);
+      presentState.revealed = presentState.cleanItems.length + 1;
+      render();
+    }
   }
   function close(){
     overlay.classList.remove('show');
@@ -1278,8 +1375,9 @@ function openPresentMode(items, title){
   overlay.addEventListener('click', onOverlayClick);
   document.getElementById('presentClose').addEventListener('click', onCloseClick);
 
-  overlay.classList.add('show');
+  loadEntry(0);
   render();
+  overlay.classList.add('show');
   if(overlay.requestFullscreen){ overlay.requestFullscreen().catch(()=>{}); }
 }
 
@@ -2078,6 +2176,20 @@ function renderFreeWriteChips(container, items){
     exportItemsToPptx(items, { title: 'My sentence', fileName: slugify(assembleSentenceText(items)) });
   });
   container.appendChild(exportBtn);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn-small';
+  saveBtn.style.marginTop = '10px';
+  saveBtn.style.marginLeft = '8px';
+  saveBtn.textContent = '💾 Save to my sentences';
+  saveBtn.addEventListener('click', ()=>{
+    addToSentenceBank(items);
+    const original = saveBtn.textContent;
+    saveBtn.textContent = '✓ Saved — see the My sentences tab';
+    saveBtn.disabled = true;
+    setTimeout(()=>{ saveBtn.textContent = original; saveBtn.disabled = false; }, 1800);
+  });
+  container.appendChild(saveBtn);
 }
 
 function buildFreeWritePanel(){
@@ -2137,6 +2249,119 @@ function buildFreeWritePanel(){
   wrap.appendChild(hint);
 
   return wrap;
+}
+
+function buildBankPanel(){
+  const wrap = document.createElement('div');
+  wrap.className = 'freewrite-box';
+
+  const h2 = document.createElement('h2');
+  h2.textContent = 'My saved sentences';
+  h2.style.margin = '0 0 8px';
+  h2.style.fontSize = '1.2rem';
+  wrap.appendChild(h2);
+
+  const p = document.createElement('p');
+  p.style.fontSize = '0.85rem';
+  p.style.color = 'var(--muted)';
+  p.style.margin = '0 0 10px';
+  p.textContent = "Sentences you save from the ✏️ My sentence tab land here — build up a set ahead of a lesson, then present them all in one go, straight through from one to the next, without closing and reopening each time.";
+  wrap.appendChild(p);
+
+  if(!sentenceBank.length){
+    const empty = document.createElement('p');
+    empty.className = 'freewrite-empty';
+    empty.textContent = 'Nothing saved yet — colour a sentence in ✏️ My sentence, then tap "💾 Save to my sentences".';
+    wrap.appendChild(empty);
+    return wrap;
+  }
+
+  const presentAllBtn = document.createElement('button');
+  presentAllBtn.className = 'btn-main';
+  presentAllBtn.textContent = `🎬 Present all (${sentenceBank.length})`;
+  presentAllBtn.style.marginBottom = '14px';
+  presentAllBtn.addEventListener('click', ()=>{
+    openPresentPlaylist(sentenceBank.map((e,i)=>({ items:e.items, title:`Saved sentence ${i+1}` })));
+  });
+  wrap.appendChild(presentAllBtn);
+
+  const list = document.createElement('div');
+  list.className = 'bank-list';
+
+  sentenceBank.forEach((entry, idx)=>{
+    const row = document.createElement('div');
+    row.className = 'bank-item';
+
+    const preview = document.createElement('div');
+    preview.className = 'bank-item-preview';
+    entry.items.forEach(it=>{
+      const def = TYPE[it.cat] || TYPE.lit;
+      const hasComma = /,$/.test(it.text);
+      const displayText = hasComma ? it.text.slice(0, -1) : it.text;
+      const pill = document.createElement('span');
+      pill.className = 'bank-pill';
+      pill.style.background = def.bg;
+      pill.style.color = def.fg;
+      if(def.border) pill.style.border = def.border;
+      pill.textContent = displayText;
+      preview.appendChild(pill);
+    });
+    row.appendChild(preview);
+
+    const actions = document.createElement('div');
+    actions.className = 'bank-item-actions';
+
+    const upBtn = document.createElement('button');
+    upBtn.className = 'btn-small';
+    upBtn.title = 'Move earlier';
+    upBtn.textContent = '↑';
+    upBtn.disabled = idx === 0;
+    upBtn.addEventListener('click', ()=>{ moveInSentenceBank(entry.id, -1); selectBank(); });
+    actions.appendChild(upBtn);
+
+    const downBtn = document.createElement('button');
+    downBtn.className = 'btn-small';
+    downBtn.title = 'Move later';
+    downBtn.textContent = '↓';
+    downBtn.disabled = idx === sentenceBank.length-1;
+    downBtn.addEventListener('click', ()=>{ moveInSentenceBank(entry.id, 1); selectBank(); });
+    actions.appendChild(downBtn);
+
+    const presentBtn = document.createElement('button');
+    presentBtn.className = 'btn-small';
+    presentBtn.textContent = '🎬 Present';
+    presentBtn.addEventListener('click', ()=>{
+      openPresentMode(entry.items, `Saved sentence ${idx+1}`);
+    });
+    actions.appendChild(presentBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-small';
+    delBtn.textContent = '🗑 Delete';
+    delBtn.addEventListener('click', ()=>{
+      if(confirm('Remove this saved sentence?')){
+        removeFromSentenceBank(entry.id);
+        selectBank();
+      }
+    });
+    actions.appendChild(delBtn);
+
+    row.appendChild(actions);
+    list.appendChild(row);
+  });
+
+  wrap.appendChild(list);
+  return wrap;
+}
+
+function selectBank(){
+  document.querySelectorAll('.year-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.id==='bank');
+  });
+  const content = document.getElementById('yearContent');
+  content.innerHTML = '';
+  content.appendChild(buildBankPanel());
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function selectFreeWrite(){

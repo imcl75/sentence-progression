@@ -360,16 +360,19 @@
   }
 
   /* Optional Subject/Verb/Object annotation, shown below the who/doing/what block and
-     joined to it by a short coloured tick. Off by default (a body-level class flips it on)
-     so toggling is instant everywhere — no re-render needed in the builder cards,
-     free-write chips, or Present Mode, since this element already exists in the DOM. */
+     joined to it by a short coloured tick. Off by default (a body-level class per category
+     flips each on independently) so toggling is instant everywhere — no re-render needed
+     in the builder cards, free-write chips, or Present Mode, since this element already
+     exists in the DOM. */
   .grammar-term{
     display:none;
     flex-direction:column;
     align-items:center;
     margin-top:4px;
   }
-  body.show-grammar-terms .grammar-term{ display:flex; }
+  body.show-grammar-term-who .grammar-term.who,
+  body.show-grammar-term-doing .grammar-term.doing,
+  body.show-grammar-term-what .grammar-term.what{ display:flex; }
   .grammar-term .tick{ width:1.5px; height:9px; background:currentColor; }
   .grammar-term .term-text{
     font-size:0.6rem;
@@ -485,10 +488,11 @@
     cursor:pointer;
   }
   .present-close:hover{ background:rgba(255,255,255,0.22); }
+  .present-toggle-group{ display:flex; align-items:center; gap:14px; }
   .present-toggle{
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:6px;
     color:#cfe9f7;
     font-size:0.85rem;
     font-weight:700;
@@ -496,6 +500,9 @@
     user-select:none;
   }
   .present-toggle input{ width:16px; height:16px; cursor:pointer; accent-color:var(--brand); }
+  .present-toggle.who input{ accent-color:var(--who); }
+  .present-toggle.doing input{ accent-color:var(--doing); }
+  .present-toggle.what input{ accent-color:var(--what); }
   .present-title{
     color:#8fb8cc;
     font-size:1.3vw;
@@ -649,16 +656,26 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26a
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26b
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
   <div class="present-topbar">
     <div class="present-step" id="presentStep"></div>
-    <label class="present-toggle">
-      <input type="checkbox" id="grammarTermToggle">
-      Show Subject/Verb/Object
-    </label>
+    <div class="present-toggle-group">
+      <label class="present-toggle who">
+        <input type="checkbox" id="grammarTermToggleWho">
+        Subject
+      </label>
+      <label class="present-toggle doing">
+        <input type="checkbox" id="grammarTermToggleDoing">
+        Verb
+      </label>
+      <label class="present-toggle what">
+        <input type="checkbox" id="grammarTermToggleWhat">
+        Object
+      </label>
+    </div>
     <button class="present-close" id="presentClose">✕ Close</button>
   </div>
   <div class="present-title" id="presentTitle"></div>
@@ -742,24 +759,29 @@ const PLACEHOLDER = {
 
 /* ---------- Optional Subject/Verb/Object annotation ---------- */
 // Who/doing/what always show as they do today; this is an extra, separated layer that a
-// teacher can switch on once pupils are ready for the formal grammar terms. One shared
-// setting controls it everywhere (year-group builder, free-write, Present Mode), toggled
-// from Present Mode's own toolbar and remembered between visits.
+// teacher can switch on once pupils are ready for the formal grammar terms. Each of the
+// three has its own independent on/off setting (not one combined switch), toggled from
+// three checkboxes in Present Mode's toolbar and remembered between visits. Every setting
+// applies everywhere at once — year-group builder, free-write, Present Mode — via a
+// body-level class per category, so toggling needs no re-render.
 const GRAMMAR_TERM = { who:'Subject', doing:'Verb', what:'Object' };
-const GRAMMAR_TERM_STORAGE_KEY = 'wfa_scp_showGrammarTerms';
-let showGrammarTerms = false;
-try { showGrammarTerms = localStorage.getItem(GRAMMAR_TERM_STORAGE_KEY) === '1'; } catch(e) {}
-function setShowGrammarTerms(v){
-  showGrammarTerms = v;
-  document.body.classList.toggle('show-grammar-terms', v);
-  try { localStorage.setItem(GRAMMAR_TERM_STORAGE_KEY, v ? '1' : '0'); } catch(e) {}
+const GRAMMAR_TERM_STORAGE_PREFIX = 'wfa_scp_showGrammarTerm_';
+const GRAMMAR_TERM_TOGGLE_ID = { who:'grammarTermToggleWho', doing:'grammarTermToggleDoing', what:'grammarTermToggleWhat' };
+const showGrammarTerm = {};
+function setShowGrammarTerm(cat, v){
+  showGrammarTerm[cat] = v;
+  document.body.classList.toggle('show-grammar-term-'+cat, v);
+  try { localStorage.setItem(GRAMMAR_TERM_STORAGE_PREFIX+cat, v ? '1' : '0'); } catch(e) {}
 }
-document.body.classList.toggle('show-grammar-terms', showGrammarTerms);
-{
-  const toggleEl = document.getElementById('grammarTermToggle');
-  toggleEl.checked = showGrammarTerms;
-  toggleEl.addEventListener('change', ()=> setShowGrammarTerms(toggleEl.checked));
-}
+Object.keys(GRAMMAR_TERM).forEach(cat=>{
+  let v = false;
+  try { v = localStorage.getItem(GRAMMAR_TERM_STORAGE_PREFIX+cat) === '1'; } catch(e) {}
+  showGrammarTerm[cat] = v;
+  document.body.classList.toggle('show-grammar-term-'+cat, v);
+  const toggleEl = document.getElementById(GRAMMAR_TERM_TOGGLE_ID[cat]);
+  toggleEl.checked = v;
+  toggleEl.addEventListener('change', ()=> setShowGrammarTerm(cat, toggleEl.checked));
+});
 // Builds the tick + term-text element for a who/doing/what slot; returns null for every
 // other category, since only these three ever get the optional annotation.
 function buildGrammarTermEl(cat){

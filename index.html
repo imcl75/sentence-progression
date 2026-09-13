@@ -359,6 +359,30 @@
     word-break:break-word;
   }
 
+  /* Optional Subject/Verb/Object annotation, shown below the who/doing/what block and
+     joined to it by a short coloured tick. Off by default (a body-level class flips it on)
+     so toggling is instant everywhere — no re-render needed in the builder cards,
+     free-write chips, or Present Mode, since this element already exists in the DOM. */
+  .grammar-term{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    margin-top:4px;
+  }
+  body.show-grammar-terms .grammar-term{ display:flex; }
+  .grammar-term .tick{ width:1.5px; height:9px; background:currentColor; }
+  .grammar-term .term-text{
+    font-size:0.6rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-top:3px;
+    color:currentColor;
+  }
+  .grammar-term.who{ color:var(--who); }
+  .grammar-term.doing{ color:#b98900; }
+  .grammar-term.what{ color:var(--what); }
+
   .freewrite-box{
     background:var(--card);
     border-radius:10px;
@@ -461,6 +485,17 @@
     cursor:pointer;
   }
   .present-close:hover{ background:rgba(255,255,255,0.22); }
+  .present-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#cfe9f7;
+    font-size:0.85rem;
+    font-weight:700;
+    cursor:pointer;
+    user-select:none;
+  }
+  .present-toggle input{ width:16px; height:16px; cursor:pointer; accent-color:var(--brand); }
   .present-title{
     color:#8fb8cc;
     font-size:1.3vw;
@@ -518,6 +553,21 @@
     display:flex; align-items:center; justify-content:center;
   }
   .present-chip .aux-diamond .p-word{ font-size:1.5vw; color:#222; }
+  .present-token{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    opacity:0;
+    transform:translateY(14px) scale(0.96);
+    transition:opacity .28s ease, transform .28s ease;
+  }
+  .present-token.visible{ opacity:1; transform:translateY(0) scale(1); }
+  .present-token .present-chip, .present-token .present-lit{
+    opacity:1; transform:none; transition:none; /* the wrapper now owns the reveal animation */
+  }
+  .present-token .grammar-term{ margin-top:1vh; }
+  .present-token .grammar-term .tick{ width:2px; height:1.4vh; }
+  .present-token .grammar-term .term-text{ font-size:0.85vw; margin-top:0.5vh; }
   .present-lit{
     display:flex; align-items:center; justify-content:center;
     background:#e2e2e2; color:#333; border-radius:14px;
@@ -599,12 +649,16 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v12.09.26j
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26a
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
   <div class="present-topbar">
     <div class="present-step" id="presentStep"></div>
+    <label class="present-toggle">
+      <input type="checkbox" id="grammarTermToggle">
+      Show Subject/Verb/Object
+    </label>
     <button class="present-close" id="presentClose">✕ Close</button>
   </div>
   <div class="present-title" id="presentTitle"></div>
@@ -671,17 +725,13 @@ const CATEGORY_ORDER = ['who','doing','what','where','when','how','describe','au
 /* Auxiliary/modal word choices offered in the aux diamond's dropdown, in both the
    structured builder and the free-write tool. */
 const AUX_OPTIONS = ['is','was','are','were','has','have','might','can','could','may','must','shall','should','will','would'];
-function categoryDisplayName(t, yearId){
+function categoryDisplayName(t){
   if(t==='aux') return 'is / was / has / might…';
   if(t==='lit') return 'plain (not coloured)';
-  if(t==='who'){
-    // "who" is really the grammatical subject, which isn't always a person (e.g. "the ball
-    // deflates"). Year 1-2 keep the simple, concrete term matching the source document;
-    // Year 3 upward (and general contexts like free-write, with no single year in play)
-    // introduce the formal term alongside it.
-    if(yearId==='y1' || yearId==='y2') return 'who';
-    return 'who (subject)';
-  }
+  // "who" is really the grammatical subject, which isn't always a person (e.g. "the ball
+  // deflates") — but that formal term now lives in the separate, optional Subject/Verb/
+  // Object annotation (see GRAMMAR_TERM) rather than being baked into this label, so it
+  // just returns the plain word like every other category.
   return TYPE[t].label;
 }
 
@@ -689,6 +739,42 @@ const PLACEHOLDER = {
   who:'the child', doing:'eats', what:'the lolly', where:'at the table',
   when:'before school', how:'quickly', describe:'happy', relative:'who was smiling'
 };
+
+/* ---------- Optional Subject/Verb/Object annotation ---------- */
+// Who/doing/what always show as they do today; this is an extra, separated layer that a
+// teacher can switch on once pupils are ready for the formal grammar terms. One shared
+// setting controls it everywhere (year-group builder, free-write, Present Mode), toggled
+// from Present Mode's own toolbar and remembered between visits.
+const GRAMMAR_TERM = { who:'Subject', doing:'Verb', what:'Object' };
+const GRAMMAR_TERM_STORAGE_KEY = 'wfa_scp_showGrammarTerms';
+let showGrammarTerms = false;
+try { showGrammarTerms = localStorage.getItem(GRAMMAR_TERM_STORAGE_KEY) === '1'; } catch(e) {}
+function setShowGrammarTerms(v){
+  showGrammarTerms = v;
+  document.body.classList.toggle('show-grammar-terms', v);
+  try { localStorage.setItem(GRAMMAR_TERM_STORAGE_KEY, v ? '1' : '0'); } catch(e) {}
+}
+document.body.classList.toggle('show-grammar-terms', showGrammarTerms);
+{
+  const toggleEl = document.getElementById('grammarTermToggle');
+  toggleEl.checked = showGrammarTerms;
+  toggleEl.addEventListener('change', ()=> setShowGrammarTerms(toggleEl.checked));
+}
+// Builds the tick + term-text element for a who/doing/what slot; returns null for every
+// other category, since only these three ever get the optional annotation.
+function buildGrammarTermEl(cat){
+  if(!GRAMMAR_TERM[cat]) return null;
+  const el = document.createElement('div');
+  el.className = 'grammar-term ' + cat;
+  const tick = document.createElement('div');
+  tick.className = 'tick';
+  const text = document.createElement('div');
+  text.className = 'term-text';
+  text.textContent = GRAMMAR_TERM[cat];
+  el.appendChild(tick);
+  el.appendChild(text);
+  return el;
+}
 
 /* ---------- Helper to build a slot token ---------- */
 function s(type, def, extra){ return Object.assign({type, default:def}, extra||{}); }
@@ -1040,11 +1126,17 @@ function openPresentMode(items, title){
     const def = TYPE[it.cat] || TYPE.lit;
     const hasComma = /,$/.test(it.text);
     const displayText = hasComma ? it.text.slice(0, -1) : it.text;
+    // Every token gets a wrapper — this is what the reveal animation now targets — so the
+    // optional Subject/Verb/Object annotation can sit below the coloured chip/lit block
+    // (outside it) while still fading in and out together with it.
+    const token = document.createElement('div');
+    token.className = 'present-token';
     if(it.cat === 'lit'){
       const chip = document.createElement('div');
       chip.className = 'present-lit';
       chip.textContent = displayText;
-      row.appendChild(chip);
+      token.appendChild(chip);
+      row.appendChild(token);
       return;
     }
     const chip = document.createElement('div');
@@ -1083,7 +1175,10 @@ function openPresentMode(items, title){
       comma.className = 'p-comma';
       chip.appendChild(comma);
     }
-    row.appendChild(chip);
+    token.appendChild(chip);
+    const gTerm = buildGrammarTermEl(it.cat);
+    if(gTerm) token.appendChild(gTerm);
+    row.appendChild(token);
   });
 
   const presentFullstop = document.createElement('div');
@@ -1123,7 +1218,7 @@ function openPresentMode(items, title){
     document.getElementById('presentClose').removeEventListener('click', onCloseClick);
   }
   function onOverlayClick(e){
-    if(e.target.id === 'presentClose') return;
+    if(e.target.id === 'presentClose' || e.target.closest('.present-toggle')) return;
     advance();
   }
   function onCloseClick(e){ e.stopPropagation(); close(); }
@@ -1193,7 +1288,9 @@ function buildCard(structure, sIdx, yearId){
 
     const label = document.createElement('div');
     label.className = 'slot-label';
-    label.textContent = (tok.type==='who' ? categoryDisplayName('who', yearId) : def.label) || '';
+    // "who" always shows its plain word here now — the formal "subject" term lives in the
+    // separate, optional annotation below the block instead of being baked into this label.
+    label.textContent = def.label || '';
     wrap.appendChild(label);
 
     const box = document.createElement('div');
@@ -1239,6 +1336,8 @@ function buildCard(structure, sIdx, yearId){
       box.appendChild(field);
     }
     wrap.appendChild(box);
+    const gTerm = buildGrammarTermEl(tok.type);
+    if(gTerm) wrap.appendChild(gTerm);
     row.appendChild(wrap);
   });
 
@@ -1900,6 +1999,8 @@ function renderFreeWriteChips(container, items){
     if(def.diamond) box.appendChild(content);
 
     wrap.appendChild(box);
+    const gTerm = buildGrammarTermEl(item.cat);
+    if(gTerm) wrap.appendChild(gTerm);
     row.appendChild(wrap);
 
     if(hasComma){

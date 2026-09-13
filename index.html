@@ -297,7 +297,9 @@
     padding:8px 12px;
     font-weight:700;
     font-size:0.95rem;
-    min-height:70px;
+    /* Matches a regular slot-box's own height (62px) rather than its own unrelated value —
+       see the aux-box fix above for why these need to agree. */
+    min-height:62px;
     flex:1;
   }
 
@@ -365,16 +367,27 @@
      joined to it by a short coloured tick. Off by default (a body-level class per category
      flips each on independently) so toggling is instant everywhere — no re-render needed
      in the builder cards, free-write chips, or Present Mode, since this element already
-     exists in the DOM. */
+     exists in the DOM.
+
+     Every slot gets one of these (see buildGrammarTermEl) — not just who/doing/what — so
+     that once ANY category's caption is showing, every column in the same row (describe,
+     aux, coordinating, "and", even the punctuation marks that align themselves to the
+     row's bottom edge) reserves the same extra height and nothing shifts out of line.
+     Slots that aren't who/doing/what carry no category class, so the visibility rule below
+     never lights them up — they stay invisible placeholders, matched in height only. */
   .grammar-term{
     display:none;
+    visibility:hidden;
     flex-direction:column;
     align-items:center;
     margin-top:4px;
   }
+  body.show-grammar-term-who .grammar-term,
+  body.show-grammar-term-doing .grammar-term,
+  body.show-grammar-term-what .grammar-term{ display:flex; }
   body.show-grammar-term-who .grammar-term.who,
   body.show-grammar-term-doing .grammar-term.doing,
-  body.show-grammar-term-what .grammar-term.what{ display:flex; }
+  body.show-grammar-term-what .grammar-term.what{ visibility:visible; }
   .grammar-term .tick{ width:1.5px; height:9px; background:currentColor; }
   .grammar-term .term-text{
     font-size:0.6rem;
@@ -583,7 +596,10 @@
   .present-lit{
     display:flex; align-items:center; justify-content:center;
     background:#e2e2e2; color:#333; border-radius:14px;
-    padding:1.6vh 1.4vw; font-size:1.6vw; font-weight:800;
+    /* Extra vertical padding (not just 1.6vh) so a plain one-line word like "and" reaches
+       roughly the same overall height as a who/doing/what chip beside it (icon + label +
+       word stacked) instead of sitting as a noticeably smaller box in the row. */
+    padding:5.6vh 1.4vw; font-size:1.6vw; font-weight:800;
     opacity:0; transform:translateY(14px) scale(0.96);
     transition:opacity .28s ease, transform .28s ease;
   }
@@ -661,7 +677,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26e
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26f
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
@@ -787,17 +803,19 @@ Object.keys(GRAMMAR_TERM).forEach(cat=>{
   toggleEl.checked = v;
   toggleEl.addEventListener('change', ()=> setShowGrammarTerm(cat, toggleEl.checked));
 });
-// Builds the tick + term-text element for a who/doing/what slot; returns null for every
-// other category, since only these three ever get the optional annotation.
+// Builds the tick + term-text element for a slot. Who/doing/what get their real term and
+// the category class that lets the CSS above make them visible; every other category
+// still gets one (just uncoloured, textless) purely to hold the same height — see the
+// comment on .grammar-term for why every slot needs one, not just these three.
 function buildGrammarTermEl(cat){
-  if(!GRAMMAR_TERM[cat]) return null;
+  const term = GRAMMAR_TERM[cat];
   const el = document.createElement('div');
-  el.className = 'grammar-term ' + cat;
+  el.className = 'grammar-term' + (term ? ' ' + cat : '');
   const tick = document.createElement('div');
   tick.className = 'tick';
   const text = document.createElement('div');
   text.className = 'term-text';
-  text.textContent = GRAMMAR_TERM[cat];
+  text.textContent = term || ' ';
   el.appendChild(tick);
   el.appendChild(text);
   return el;
@@ -1163,6 +1181,7 @@ function openPresentMode(items, title){
       chip.className = 'present-lit';
       chip.textContent = displayText;
       token.appendChild(chip);
+      token.appendChild(buildGrammarTermEl('lit'));
       row.appendChild(token);
       return;
     }
@@ -1203,8 +1222,7 @@ function openPresentMode(items, title){
       chip.appendChild(comma);
     }
     token.appendChild(chip);
-    const gTerm = buildGrammarTermEl(it.cat);
-    if(gTerm) token.appendChild(gTerm);
+    token.appendChild(buildGrammarTermEl(it.cat));
     row.appendChild(token);
   });
 
@@ -1302,6 +1320,7 @@ function buildCard(structure, sIdx, yearId){
       b.className = 'lit-badge';
       b.textContent = tok.text;
       litWrap.appendChild(b);
+      litWrap.appendChild(buildGrammarTermEl('lit'));
       row.appendChild(litWrap);
       return;
     }
@@ -1363,8 +1382,7 @@ function buildCard(structure, sIdx, yearId){
       box.appendChild(field);
     }
     wrap.appendChild(box);
-    const gTerm = buildGrammarTermEl(tok.type);
-    if(gTerm) wrap.appendChild(gTerm);
+    wrap.appendChild(buildGrammarTermEl(tok.type));
     row.appendChild(wrap);
   });
 
@@ -2026,8 +2044,7 @@ function renderFreeWriteChips(container, items){
     if(def.diamond) box.appendChild(content);
 
     wrap.appendChild(box);
-    const gTerm = buildGrammarTermEl(item.cat);
-    if(gTerm) wrap.appendChild(gTerm);
+    wrap.appendChild(buildGrammarTermEl(item.cat));
     row.appendChild(wrap);
 
     if(hasComma){

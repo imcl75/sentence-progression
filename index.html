@@ -552,14 +552,17 @@
   .present-chip .p-icon img{ height:3.4vw; min-height:36px; width:auto; }
   .present-chip .p-label{ font-size:0.9vw; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4vh; }
   .present-chip .p-word{ font-size:2vw; font-weight:800; text-align:center; }
-  .present-chip.aux-box{ background:var(--doing); padding:1.4vh 1.2vw; }
+  /* Same padding as a regular chip (not its own value) so the diamond box lands at the
+     same overall height as the who/doing/what chips beside it in the row — the diamond
+     itself is then sized to fill exactly that leftover content height. */
+  .present-chip.aux-box{ background:var(--doing); padding:1.6vh 1.4vw; }
   .present-chip .aux-diamond{
-    width:11vw; height:11vw; max-width:170px; max-height:170px;
+    width:8vw; height:8vw; max-width:125px; max-height:125px;
     background:#fff; border:3px solid #222;
     clip-path: polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%);
     display:flex; align-items:center; justify-content:center;
   }
-  .present-chip .aux-diamond .p-word{ font-size:1.5vw; color:#222; }
+  .present-chip .aux-diamond .p-word{ font-size:1.4vw; color:#222; }
   .present-token{
     display:flex;
     flex-direction:column;
@@ -656,7 +659,7 @@
 </main>
 
 <footer>
-  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26c
+  Colour-Coded Sentence Builder · Wallscourt Farm Academy · based on Jacobs Education's Colour-Coded Sentence Progression · v13.09.26d
 </footer>
 
 <div class="present-overlay" id="presentOverlay">
